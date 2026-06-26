@@ -54,6 +54,38 @@ export const TEMPLATES = {
       },
     ],
   },
+
+  // Lost / written-off car: there's nothing to keep and nothing to trade in, so every option is a
+  // fresh purchase. Each scenario carries purchasePrice and no currentValue/tradeInValue — a pure
+  // buy-vs-buy comparison on equal mileage.
+  "replace-lost-car": {
+    label: "Lost your car? Used EV vs petrol vs diesel",
+    blurb:
+      "Your car is gone and you need a replacement. This compares three used buys on the same " +
+      "mileage — which is cheapest to own over the years, and the cash each one needs up front.",
+    rates: { ...DEFAULT_RATES, years: 7 },
+    scenarios: [
+      {
+        id: "buy-petrol", role: "baseline", label: "Buy a used petrol", powertrain: "petrol",
+        annualMiles: 9000, mpg: 50,
+        purchasePrice: 9000, depreciationPctPerYear: 0.10,
+        insurancePerYear: 380, servicingPerYear: 280, repairsPerYear: 150, vedPerYear: 180,
+      },
+      {
+        id: "buy-ev", role: "switch", label: "Buy a used EV", powertrain: "ev",
+        annualMiles: 9000, milesPerKwh: 4.0,
+        homePct: 80, publicPct: 20, solarPct: 0,
+        purchasePrice: 15000, depreciationPctPerYear: 0.11,
+        insurancePerYear: 520, servicingPerYear: 150, vedPerYear: 0,
+      },
+      {
+        id: "buy-diesel", role: "compare", label: "Buy a used diesel", powertrain: "diesel",
+        annualMiles: 9000, mpg: 58,
+        purchasePrice: 12000, depreciationPctPerYear: 0.11,
+        insurancePerYear: 460, servicingPerYear: 360, repairsPerYear: 150, vedPerYear: 180,
+      },
+    ],
+  },
 };
 
 export const DEFAULT_TEMPLATE = "keep-vs-used-ev-solar";

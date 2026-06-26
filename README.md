@@ -30,6 +30,9 @@ starting points you edit.
 ## How it works
 
 - `js/model.js` — the pure total-cost-of-ownership maths (no DOM); the formulas live here.
+- `js/onboarding.js` — the guided **Start here** front door: a few plain-language questions that
+  build a sensible comparison, so you need no car knowledge to begin (skippable; power users go
+  straight to the dashboard).
 - `js/templates.js` — anonymised starting scenarios + editable UK default rates.
 - `js/charts.js` — the cumulative-cost (crossover) line chart and the cost-breakdown bar.
 - `js/app.js` — wires inputs ↔ model ↔ charts, renders the pence-per-mile gauges, syncs the URL.

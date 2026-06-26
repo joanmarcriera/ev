@@ -10,6 +10,7 @@ import {
   cumulativeCostAt,
   cumulativeSeries,
   pencePerMile,
+  assetValue0,
   upfrontCash,
   compare,
   divergenceReasons,
@@ -142,6 +143,41 @@ test("compare() reports break-even 0 when the switch is cheaper from year one", 
   const r = compare(keep, ev, { ...rates, years: 5 });
   assert.equal(r.breakEvenYear, 0);
   assert.ok(r.lifetimeSaving > 0);
+});
+
+test("assetValue0 keys off the field present, not the role (buy-vs-buy support)", () => {
+  // A bought baseline (lost-car replacement) has purchasePrice → depreciate from the purchase price.
+  assert.equal(assetValue0({ role: "baseline", purchasePrice: 9000 }), 9000);
+  // A kept car carries currentValue and no purchasePrice → unchanged behaviour.
+  assert.equal(assetValue0({ role: "baseline", currentValue: 4000 }), 4000);
+  // purchasePrice wins if somehow both are present.
+  assert.equal(assetValue0({ role: "baseline", purchasePrice: 9000, currentValue: 4000 }), 9000);
+});
+
+test("upfront cash is reported for a bought baseline, still zero for a kept car", () => {
+  assert.equal(upfrontCash({ role: "baseline", purchasePrice: 9000 }), 9000);
+  assert.equal(upfrontCash({ role: "baseline", purchasePrice: 12000, tradeInValue: 2000 }), 10000);
+  assert.equal(upfrontCash({ role: "baseline", currentValue: 4000 }), 0);
+});
+
+test("kept baseline still depreciates from currentValue, not a purchase price", () => {
+  // currentValue 4000, 10%/yr, no running costs → year-1 cumulative ≈ 400 of depreciation.
+  const keep = { role: "baseline", powertrain: "petrol", annualMiles: 0, mpg: 50, currentValue: 4000, depreciationPctPerYear: 0.10 };
+  approx(cumulativeCostAt(keep, rates, 1), 400, 0.5);
+});
+
+test("compare() on buy-vs-buy reports each option's own upfront cash", () => {
+  const buyPetrol = {
+    role: "baseline", powertrain: "petrol", annualMiles: 9000, mpg: 50,
+    purchasePrice: 9000, depreciationPctPerYear: 0.10, insurancePerYear: 380, servicingPerYear: 280, vedPerYear: 180,
+  };
+  const buyEv = {
+    role: "switch", powertrain: "ev", annualMiles: 9000, milesPerKwh: 4.0, homePct: 80, publicPct: 20,
+    purchasePrice: 15000, depreciationPctPerYear: 0.11, insurancePerYear: 520, servicingPerYear: 150, vedPerYear: 0,
+  };
+  const r = compare(buyPetrol, buyEv, { ...rates, years: 7 });
+  assert.equal(r.upfrontCash, 15000);     // the EV's cash
+  assert.equal(r.baselineUpfront, 9000);  // the petrol's cash — no longer forced to 0
 });
 
 test("compare() reports no break-even when the switch never pays back", () => {
