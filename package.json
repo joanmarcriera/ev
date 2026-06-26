@@ -1,0 +1,13 @@
+{
+  "name": "ev-decision-tool",
+  "version": "0.1.0",
+  "description": "Should you buy an EV, petrol, diesel or hybrid? An interactive UK total-cost-of-ownership decision tool.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "serve": "python3 -m http.server 8000"
+  },
+  "license": "MIT",
+  "homepage": "https://ev.riera.co.uk"
+}
