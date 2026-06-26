@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EV or not? — Should you switch to electric, or buy petrol, diesel or hybrid?</title>
+  <meta name="description" content="An interactive UK total-cost-of-ownership tool. Compare keeping your current car against buying an EV, petrol, diesel or hybrid — see the break-even year, lifetime cost and pence-per-mile live.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- ===================== DASHBOARD (no-scroll on a 22" screen) ===================== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">⚡</span>
+      <h1>EV&nbsp;or&nbsp;not?</h1>
+      <p class="tagline">Keep it, or switch? See the real cost.</p>
+    </div>
+
+    <div class="templates" role="group" aria-label="Start from a template">
+      <button class="chip" data-template="keep-vs-used-ev-solar">Keep vs used EV + solar</button>
+      <button class="chip" data-template="mileage-jumped">Mileage jumped — now or wait?</button>
+    </div>
+
+    <div class="globals">
+      <label class="years">
+        <span>Years <strong id="years-val">7</strong></span>
+        <input id="years" type="range" min="1" max="15" step="1" value="7">
+      </label>
+      <button id="share" class="btn-ghost" title="Copy a shareable link to this comparison">Share</button>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <!-- left: editable scenarios -->
+    <section class="panel inputs" aria-label="Your cars and numbers">
+      <div id="scenario-cards"></div>
+      <button id="add-scenario" class="btn-add">+ Add a third option</button>
+      <details class="rates">
+        <summary>Energy &amp; fuel prices</summary>
+        <div class="rates-grid">
+          <label><span>Petrol £/L</span><input id="rate-petrol" type="number" step="0.01" min="0"></label>
+          <label><span>Diesel £/L</span><input id="rate-diesel" type="number" step="0.01" min="0"></label>
+          <label><span>Home £/kWh</span><input id="rate-home" type="number" step="0.01" min="0"></label>
+          <label><span>Public £/kWh</span><input id="rate-public" type="number" step="0.01" min="0"></label>
+          <label><span>Solar £/kWh</span><input id="rate-solar" type="number" step="0.01" min="0"></label>
+        </div>
+      </details>
+    </section>
+
+    <!-- centre: verdict + the crossover chart (the hero) -->
+    <section class="panel hero" aria-label="Result">
+      <div id="verdict" class="verdict" aria-live="polite"></div>
+      <div class="chart-box">
+        <canvas id="line-chart" aria-label="Cumulative cost over time for each option"></canvas>
+      </div>
+    </section>
+
+    <!-- right: the signature gauges + breakdown -->
+    <section class="panel side" aria-label="At a glance">
+      <h2 class="side-h">Running pence per mile</h2>
+      <div id="gauges" class="gauges"></div>
+      <h2 class="side-h">Yearly cost breakdown</h2>
+      <div class="chart-box small">
+        <canvas id="bar-chart" aria-label="Annual cost breakdown for each option"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <button id="to-report" class="report-cue">See the full report ↓</button>
+
+  <!-- ===================== DETAILED REPORT (scroll) ===================== -->
+  <section id="report" class="report">
+    <div class="report-inner">
+      <h2>The full picture</h2>
+      <p class="lede" id="report-blurb">
+        Everything below is driven by the numbers you set above. Change anything and it updates.
+        Nothing you type leaves your browser — the <em>Share</em> button just packs your inputs into the link.
+      </p>
+
+      <h3>Per-option summary over your chosen horizon</h3>
+      <div class="table-wrap">
+        <table id="report-table">
+          <thead>
+            <tr>
+              <th>Option</th><th>Power</th><th>Running p/mile</th><th>All-in p/mile</th>
+              <th>Fuel/elec /yr</th><th>Depreciation /yr</th><th>Fixed /yr</th><th>Total over horizon</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="report-cols">
+        <div>
+          <h3>How the maths works</h3>
+          <ul class="method">
+            <li><strong>Fuel</strong> = (miles ÷ MPG) × 4.546 × £/litre (UK gallon).</li>
+            <li><strong>Electricity</strong> = (miles ÷ miles-per-kWh) × a blended £/kWh from your
+              home / public / <em>solar</em> charging mix — solar miles can be near-free.</li>
+            <li><strong>Cumulative cost</strong> = running costs + depreciation (reducing-balance)
+              + any one-off repairs. Buying a car isn't treated as an instant loss — it becomes an
+              asset that then depreciates, which is what makes "keep vs switch" a fair comparison.</li>
+            <li><strong>Break-even</strong> = the year the switch's cumulative cost drops below
+              keeping your current car.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Why solar changes everything here</h3>
+          <p>
+            If you charge largely from home solar, the marginal cost of those miles is close to
+            zero — so an EV's running cost can fall to <strong>2–3p/mile</strong> against
+            <strong>14–20p/mile</strong> for petrol or diesel. Set your realistic home / public /
+            solar split per car to see it.
+          </p>
+          <h3>Defaults &amp; sources</h3>
+          <p class="sources">
+            Starting figures are illustrative UK 2026 values (petrol ≈ £1.40/L, home electricity ≈
+            27p/kWh, rapid public ≈ 79p/kWh) drawn from the TCO calculators surveyed in this
+            project's research notes — HSBC, The EV Pros, SmartMoneyTools, UK Finance Toolkit,
+            EV Calculator UK, Calks and others. Always replace them with your own quotes.
+          </p>
+        </div>
+      </div>
+
+      <p class="disclaimer">
+        Guidance only, not financial advice. Real costs depend on your tariff, driving and the
+        specific cars. This tool stores no personal data and has no backend.
+      </p>
+      <footer class="site-foot">
+        Open source · <a href="https://github.com/joanmarcriera/ev">github.com/joanmarcriera/ev</a>
+      </footer>
+    </div>
+  </section>
+
+  <script src="vendor/chart.umd.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
