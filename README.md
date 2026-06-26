@@ -57,6 +57,10 @@ replace them with your own quotes.
 
 Guidance only — not financial advice.
 
+## Support
+
+If this helped you make a decision, you can [buy me a coffee](https://marcriera.lemonsqueezy.com/checkout/buy/828ef1c2-2aa1-4c0c-8828-8b388ada3b25) ☕ — entirely optional, and there's a discreet link in the page footer too.
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE).

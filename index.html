@@ -50,12 +50,13 @@
       </details>
     </section>
 
-    <!-- centre: verdict + the crossover chart (the hero) -->
+    <!-- centre: verdict + the crossover chart (the hero) + why-they-diverge -->
     <section class="panel hero" aria-label="Result">
       <div id="verdict" class="verdict" aria-live="polite"></div>
-      <div class="chart-box">
+      <div class="chart-box hero-chart">
         <canvas id="line-chart" aria-label="Cumulative cost over time for each option"></canvas>
       </div>
+      <div id="divergence" class="why" aria-live="polite"></div>
     </section>
 
     <!-- right: the signature gauges + breakdown -->
@@ -101,36 +102,70 @@
             <li><strong>Electricity</strong> = (miles ÷ miles-per-kWh) × a blended £/kWh from your
               home / public / <em>solar</em> charging mix — solar miles can be near-free.</li>
             <li><strong>Cumulative cost</strong> = running costs + depreciation (reducing-balance)
-              + any one-off repairs. Buying a car isn't treated as an instant loss — it becomes an
-              asset that then depreciates, which is what makes "keep vs switch" a fair comparison.</li>
+              + repairs. Buying a car isn't treated as an instant loss — it becomes an asset that
+              then depreciates, which is what makes "keep vs switch" a fair comparison.</li>
             <li><strong>Break-even</strong> = the year the switch's cumulative cost drops below
-              keeping your current car.</li>
+              keeping your current car (the dashed line on the chart).</li>
           </ul>
+          <h3>Does the current car's age matter?</h3>
+          <p>
+            Mostly it's <em>already</em> baked into the car's <strong>current value</strong> — an
+            older car is simply worth less, so there's less left to depreciate. What age adds on top
+            is <strong>rising repair risk</strong> and <strong>limited remaining life</strong>:
+            a 15-year-old car may not survive a 7-year comparison at all. Those aren't captured
+            automatically, so set a realistic <em>Repairs £/yr</em> (and shorten the horizon if the
+            car likely won't last it). The <em>Age</em> field flags this for you.
+          </p>
         </div>
         <div>
           <h3>Why solar changes everything here</h3>
           <p>
-            If you charge largely from home solar, the marginal cost of those miles is close to
-            zero — so an EV's running cost can fall to <strong>2–3p/mile</strong> against
+            Charge largely from home solar and the marginal cost of those miles is close to zero —
+            an EV's running cost can fall to <strong>2–3p/mile</strong> against
             <strong>14–20p/mile</strong> for petrol or diesel. Set your realistic home / public /
             solar split per car to see it.
           </p>
-          <h3>Defaults &amp; sources</h3>
-          <p class="sources">
-            Starting figures are illustrative UK 2026 values (petrol ≈ £1.40/L, home electricity ≈
-            27p/kWh, rapid public ≈ 79p/kWh) drawn from the TCO calculators surveyed in this
-            project's research notes — HSBC, The EV Pros, SmartMoneyTools, UK Finance Toolkit,
-            EV Calculator UK, Calks and others. Always replace them with your own quotes.
-          </p>
+          <h3>Why servicing, insurance &amp; road tax differ</h3>
+          <ul class="method">
+            <li><strong>Servicing is usually cheaper for EVs</strong> — no oil, fewer moving parts,
+              and regenerative braking spares the brakes; ICE cars need more frequent, pricier
+              services (<a href="https://energysavingtrust.org.uk/electric-vehicles/" target="_blank" rel="noopener">Energy Saving Trust</a>).</li>
+            <li><strong>EVs can cost more to insure</strong> — expensive batteries, specialist
+              repairers and longer repair times push premiums up, even though they're cheaper to run
+              (<a href="https://www.abi.org.uk/" target="_blank" rel="noopener">ABI</a>,
+              <a href="https://www.thatcham.org/" target="_blank" rel="noopener">Thatcham Research</a>).</li>
+            <li><strong>Road tax (VED) changed in April 2025</strong> — EVs registered before then
+              paid £0; newer EVs now pay the standard rate (~£195/yr), plus the expensive-car
+              supplement above £40,000 (<a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank" rel="noopener">gov.uk VED tables</a>).</li>
+          </ul>
         </div>
       </div>
+
+      <h3>Other UK calculators &amp; the sources behind the defaults</h3>
+      <p class="sources">Tools that do similar comparisons (and where the default figures come from):</p>
+      <ul class="links-grid">
+        <li><a href="https://financetool.co.uk/tools/ev-vs-petrol-cost" target="_blank" rel="noopener">UK Finance Toolkit</a> — 5-yr EV vs ICE TCO with tax &amp; depreciation</li>
+        <li><a href="https://theevcalculator.co.uk" target="_blank" rel="noopener">EV Calculator UK</a> — new &amp; used EV vs petrol/diesel</li>
+        <li><a href="https://calks.uk/calculator/ev-savings-calculator/" target="_blank" rel="noopener">Calks EV savings</a> — 3–5 yr TCO incl. CO₂</li>
+        <li><a href="https://theevpros.com/tools/ev-running-cost-calculator" target="_blank" rel="noopener">The EV Pros</a> — running cost, home/public mix</li>
+        <li><a href="https://smartmoneytools.co.uk/tools/electric-vs-petrol-calculator/" target="_blank" rel="noopener">SmartMoneyTools</a> — annual running cost</li>
+        <li><a href="https://www.hsbc.co.uk/sustainability/electric-vehicles/cost-calculator/" target="_blank" rel="noopener">HSBC EV cost</a> — quick fuel-vs-electricity check</li>
+        <li><a href="https://www.admiral.com/car-insurance/car-cost-calculator" target="_blank" rel="noopener">Admiral car cost</a> — existing car vs a potential EV</li>
+        <li><a href="https://www.selectcarleasing.co.uk/fuel-cost-calculator" target="_blank" rel="noopener">Select Car Leasing</a> — fuel cost comparison</li>
+      </ul>
+      <p class="sources">
+        Default rates are illustrative UK 2026 values (petrol ≈ £1.40/L, home electricity ≈ 27p/kWh,
+        rapid public ≈ 79p/kWh). Always replace them with your own quotes.
+      </p>
 
       <p class="disclaimer">
         Guidance only, not financial advice. Real costs depend on your tariff, driving and the
         specific cars. This tool stores no personal data and has no backend.
       </p>
       <footer class="site-foot">
-        Open source · <a href="https://github.com/joanmarcriera/ev">github.com/joanmarcriera/ev</a>
+        <span>Open source · <a href="https://github.com/joanmarcriera/ev" target="_blank" rel="noopener">github.com/joanmarcriera/ev</a></span>
+        <a class="coffee" href="https://marcriera.lemonsqueezy.com/checkout/buy/828ef1c2-2aa1-4c0c-8828-8b388ada3b25"
+           target="_blank" rel="noopener" title="Found this useful? Buy me a coffee" aria-label="Buy me a coffee">☕</a>
       </footer>
     </div>
   </section>
