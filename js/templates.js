@@ -17,9 +17,9 @@ export const TEMPLATES = {
     scenarios: [
       {
         id: "keep", role: "baseline", label: "Keep the petrol car", powertrain: "petrol",
-        annualMiles: 9000, mpg: 42,
+        annualMiles: 9000, mpg: 42, ageYears: 9,
         currentValue: 4000, depreciationPctPerYear: 0.10,
-        insurancePerYear: 350, servicingPerYear: 350, vedPerYear: 180,
+        insurancePerYear: 350, servicingPerYear: 350, repairsPerYear: 250, vedPerYear: 180,
         bigRepairs: [{ year: 3, amount: 800 }],
       },
       {
@@ -41,9 +41,9 @@ export const TEMPLATES = {
     scenarios: [
       {
         id: "keep", role: "baseline", label: "Keep current car", powertrain: "petrol",
-        annualMiles: 18000, mpg: 40,
+        annualMiles: 18000, mpg: 40, ageYears: 11,
         currentValue: 5000, depreciationPctPerYear: 0.13,
-        insurancePerYear: 450, servicingPerYear: 400, vedPerYear: 180,
+        insurancePerYear: 450, servicingPerYear: 400, repairsPerYear: 300, vedPerYear: 180,
       },
       {
         id: "switch-ev", role: "switch", label: "Switch to an EV now", powertrain: "ev",

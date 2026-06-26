@@ -1,0 +1,55 @@
+// cars.js — representative UK cars to prefill a scenario. Figures are typical used-market
+// starting points (price, efficiency, depreciation, insurance, servicing, road tax) — every
+// value stays editable after you pick one. Not endorsements; just sensible defaults.
+
+export const CARS = [
+  // --- Electric ---
+  { id: "eniro64", name: "Kia e-Niro 64 kWh", powertrain: "ev", milesPerKwh: 4.0, purchasePrice: 16000, depreciationPctPerYear: 0.11, insurancePerYear: 520, servicingPerYear: 150, vedPerYear: 0 },
+  { id: "kona64", name: "Hyundai Kona Electric 64 kWh", powertrain: "ev", milesPerKwh: 4.2, purchasePrice: 15000, depreciationPctPerYear: 0.11, insurancePerYear: 520, servicingPerYear: 150, vedPerYear: 0 },
+  { id: "kona39", name: "Hyundai Kona Electric 39 kWh", powertrain: "ev", milesPerKwh: 4.3, purchasePrice: 12000, depreciationPctPerYear: 0.11, insurancePerYear: 500, servicingPerYear: 150, vedPerYear: 0 },
+  { id: "leaf40", name: "Nissan Leaf 40 kWh", powertrain: "ev", milesPerKwh: 3.8, purchasePrice: 11000, depreciationPctPerYear: 0.12, insurancePerYear: 480, servicingPerYear: 150, vedPerYear: 0 },
+  { id: "model3", name: "Tesla Model 3 RWD", powertrain: "ev", milesPerKwh: 4.0, purchasePrice: 20000, depreciationPctPerYear: 0.12, insurancePerYear: 600, servicingPerYear: 180, vedPerYear: 195 },
+  { id: "mg4", name: "MG4 51 kWh", powertrain: "ev", milesPerKwh: 3.9, purchasePrice: 15000, depreciationPctPerYear: 0.13, insurancePerYear: 500, servicingPerYear: 150, vedPerYear: 195 },
+  { id: "zoe", name: "Renault Zoe 52 kWh", powertrain: "ev", milesPerKwh: 3.9, purchasePrice: 9000, depreciationPctPerYear: 0.14, insurancePerYear: 480, servicingPerYear: 150, vedPerYear: 0 },
+  { id: "id3", name: "VW ID.3 58 kWh", powertrain: "ev", milesPerKwh: 4.0, purchasePrice: 17000, depreciationPctPerYear: 0.12, insurancePerYear: 540, servicingPerYear: 160, vedPerYear: 0 },
+  { id: "ioniq5", name: "Hyundai Ioniq 5 73 kWh", powertrain: "ev", milesPerKwh: 3.7, purchasePrice: 22000, depreciationPctPerYear: 0.12, insurancePerYear: 580, servicingPerYear: 160, vedPerYear: 195 },
+  { id: "ioniq28", name: "Hyundai Ioniq Electric 28 kWh", powertrain: "ev", milesPerKwh: 4.5, purchasePrice: 11000, depreciationPctPerYear: 0.12, insurancePerYear: 480, servicingPerYear: 150, vedPerYear: 0 },
+
+  // --- Petrol ---
+  { id: "fiesta", name: "Ford Fiesta 1.0", powertrain: "petrol", mpg: 50, purchasePrice: 8000, depreciationPctPerYear: 0.10, insurancePerYear: 380, servicingPerYear: 280, vedPerYear: 180 },
+  { id: "golf-p", name: "VW Golf 1.5 TSI", powertrain: "petrol", mpg: 45, purchasePrice: 12000, depreciationPctPerYear: 0.10, insurancePerYear: 420, servicingPerYear: 320, vedPerYear: 180 },
+  { id: "yaris", name: "Toyota Yaris 1.5", powertrain: "petrol", mpg: 55, purchasePrice: 11000, depreciationPctPerYear: 0.09, insurancePerYear: 360, servicingPerYear: 260, vedPerYear: 180 },
+  { id: "corsa", name: "Vauxhall Corsa 1.2", powertrain: "petrol", mpg: 50, purchasePrice: 9000, depreciationPctPerYear: 0.10, insurancePerYear: 380, servicingPerYear: 280, vedPerYear: 180 },
+  { id: "bmax", name: "Ford B-Max 1.4 (older)", powertrain: "petrol", mpg: 42, purchasePrice: 4000, depreciationPctPerYear: 0.10, insurancePerYear: 340, servicingPerYear: 320, vedPerYear: 180 },
+
+  // --- Diesel ---
+  { id: "focus-d", name: "Ford Focus 1.5 TDCi", powertrain: "diesel", mpg: 60, purchasePrice: 9000, depreciationPctPerYear: 0.11, insurancePerYear: 420, servicingPerYear: 320, vedPerYear: 180 },
+  { id: "passat-d", name: "VW Passat 2.0 TDI", powertrain: "diesel", mpg: 55, purchasePrice: 12000, depreciationPctPerYear: 0.11, insurancePerYear: 460, servicingPerYear: 360, vedPerYear: 180 },
+  { id: "320d", name: "BMW 320d", powertrain: "diesel", mpg: 58, purchasePrice: 14000, depreciationPctPerYear: 0.12, insurancePerYear: 520, servicingPerYear: 420, vedPerYear: 190 },
+
+  // --- Hybrid ---
+  { id: "corolla-h", name: "Toyota Corolla Hybrid", powertrain: "hybrid", mpg: 60, purchasePrice: 16000, depreciationPctPerYear: 0.10, insurancePerYear: 420, servicingPerYear: 300, vedPerYear: 180 },
+  { id: "prius", name: "Toyota Prius", powertrain: "hybrid", mpg: 65, purchasePrice: 14000, depreciationPctPerYear: 0.10, insurancePerYear: 420, servicingPerYear: 300, vedPerYear: 180 },
+  { id: "jazz-h", name: "Honda Jazz e:HEV", powertrain: "hybrid", mpg: 60, purchasePrice: 15000, depreciationPctPerYear: 0.10, insurancePerYear: 400, servicingPerYear: 280, vedPerYear: 180 },
+  { id: "niro-h", name: "Kia Niro Hybrid", powertrain: "hybrid", mpg: 58, purchasePrice: 15000, depreciationPctPerYear: 0.10, insurancePerYear: 420, servicingPerYear: 300, vedPerYear: 180 },
+];
+
+export const CAR_GROUPS = [
+  { label: "Electric", powertrain: "ev" },
+  { label: "Petrol", powertrain: "petrol" },
+  { label: "Diesel", powertrain: "diesel" },
+  { label: "Hybrid", powertrain: "hybrid" },
+];
+
+/** Fields a chosen car contributes to a scenario (mileage & charging mix are left untouched). */
+export function applyCarToScenario(scenario, car) {
+  const fields = ["powertrain", "mpg", "milesPerKwh", "purchasePrice",
+    "depreciationPctPerYear", "insurancePerYear", "servicingPerYear", "vedPerYear"];
+  const next = { ...scenario, carId: car.id, label: car.name };
+  for (const f of fields) if (car[f] != null) next[f] = car[f];
+  // Baseline cars represent a car you already own: seed its current value from the price.
+  if (scenario.role === "baseline") next.currentValue = car.purchasePrice;
+  // Clear the efficiency field that doesn't apply to the new powertrain.
+  if (car.powertrain === "ev") delete next.mpg; else delete next.milesPerKwh;
+  return next;
+}

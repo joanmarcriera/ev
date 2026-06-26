@@ -12,6 +12,7 @@ import {
   pencePerMile,
   upfrontCash,
   compare,
+  divergenceReasons,
 } from "../js/model.js";
 
 const approx = (actual, expected, tol = 0.5) =>
@@ -41,6 +42,39 @@ test("solar charging blends the kWh price down", () => {
   const ev = { powertrain: "ev", annualMiles: 12000, milesPerKwh: 3.6, homePct: 50, solarPct: 50 };
   approx(blendedKwhPrice(ev, rates), 0.135, 0.001);
   approx(annualEnergyCost(ev, rates), (12000 / 3.6) * 0.135, 0.5); // £450
+});
+
+test("blendedKwhPrice normalises by the actual split, even if it doesn't sum to 100", () => {
+  // 50/50 home/solar that sums to 100 → midpoint.
+  approx(blendedKwhPrice({ homePct: 50, solarPct: 50 }, rates), 0.135, 0.001);
+  // Same ratio but written as 30/30 (sums to 60) → must still normalise to the midpoint,
+  // never inflate the price by treating the denominator as a fixed 100.
+  approx(blendedKwhPrice({ homePct: 30, solarPct: 30 }, rates), 0.135, 0.001);
+  // Empty mix falls back to the home rate rather than dividing by zero.
+  approx(blendedKwhPrice({ homePct: 0, publicPct: 0, solarPct: 0 }, rates), rates.elecHomePerKwh, 0.001);
+});
+
+test("divergenceReasons sum exactly to the lifetime saving", () => {
+  const keep = {
+    role: "baseline", powertrain: "petrol", annualMiles: 15000, mpg: 40,
+    currentValue: 4000, depreciationPctPerYear: 0.15,
+    insurancePerYear: 350, servicingPerYear: 400, vedPerYear: 180,
+    bigRepairs: [{ year: 2, amount: 700 }],
+  };
+  const ev = {
+    role: "switch", powertrain: "ev", annualMiles: 15000, milesPerKwh: 3.6,
+    homePct: 80, publicPct: 20, purchasePrice: 16000, tradeInValue: 4000,
+    depreciationPctPerYear: 0.12, insurancePerYear: 500, servicingPerYear: 150, vedPerYear: 0,
+  };
+  const r = { ...rates, years: 7 };
+  const reasons = divergenceReasons(keep, ev, r);
+  const summed = reasons.reduce((s, x) => s + x.amount, 0);
+  const { lifetimeSaving } = compare(keep, ev, r);
+  approx(summed, lifetimeSaving, 0.5);
+  // ranked by magnitude
+  for (let i = 1; i < reasons.length; i++) {
+    assert.ok(Math.abs(reasons[i - 1].amount) >= Math.abs(reasons[i].amount));
+  }
 });
 
 test("EV per-mile is cheaper than petrol per-mile (research sanity band)", () => {

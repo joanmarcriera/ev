@@ -28,12 +28,15 @@ function fuelPriceFor(scenario, rates) {
   return scenario.powertrain === "diesel" ? rates.dieselPerLitre : rates.petrolPerLitre;
 }
 
-/** Blended £/kWh from the EV's home / public / solar charging split (percentages 0..100). */
+/** Blended £/kWh from the EV's home / public / solar charging split. Normalised by the actual
+ *  total so the result is sane for any split (the UI also clamps the total to 100%). */
 export function blendedKwhPrice(scenario, rates) {
-  const home = scenario.homePct ?? 100;
-  const pub = scenario.publicPct ?? 0;
-  const solar = scenario.solarPct ?? 0;
-  return (home * rates.elecHomePerKwh + pub * rates.elecPublicPerKwh + solar * rates.elecSolarPerKwh) / 100;
+  const home = Math.max(0, scenario.homePct ?? 100);
+  const pub = Math.max(0, scenario.publicPct ?? 0);
+  const solar = Math.max(0, scenario.solarPct ?? 0);
+  const total = home + pub + solar;
+  if (total <= 0) return rates.elecHomePerKwh; // no mix given → assume home charging
+  return (home * rates.elecHomePerKwh + pub * rates.elecPublicPerKwh + solar * rates.elecSolarPerKwh) / total;
 }
 
 /** Annual energy (fuel or electricity) cost in £. */
@@ -44,12 +47,14 @@ export function annualEnergyCost(scenario, rates) {
   return (scenario.annualMiles / scenario.mpg) * LITRES_PER_UK_GALLON * fuelPriceFor(scenario, rates);
 }
 
-/** Fixed yearly running costs (excludes depreciation and one-off repairs). */
+/** Fixed yearly running costs (excludes depreciation and one-off repairs). Includes an optional
+ *  repairs/wear allowance — how an older car's higher upkeep enters the comparison. */
 export function annualRunningCost(scenario, rates) {
   return (
     annualEnergyCost(scenario, rates) +
     (scenario.insurancePerYear ?? 0) +
     (scenario.servicingPerYear ?? 0) +
+    (scenario.repairsPerYear ?? 0) +
     (scenario.vedPerYear ?? 0)
   );
 }
@@ -59,7 +64,7 @@ export function annualBreakdown(scenario, rates) {
   return {
     energy: annualEnergyCost(scenario, rates),
     insurance: scenario.insurancePerYear ?? 0,
-    servicing: scenario.servicingPerYear ?? 0,
+    servicing: (scenario.servicingPerYear ?? 0) + (scenario.repairsPerYear ?? 0),
     ved: scenario.vedPerYear ?? 0,
     depreciation: assetValue0(scenario) * (scenario.depreciationPctPerYear ?? 0),
   };
@@ -137,4 +142,26 @@ export function compare(baseline, switchTo, rates) {
   const lifetimeSaving =
     cumulativeCostAt(baseline, rates, rates.years) - cumulativeCostAt(switchTo, rates, rates.years);
   return { breakEvenYear, lifetimeSaving, upfrontCash: upfrontCash(switchTo) };
+}
+
+/**
+ * Why two scenarios' cumulative-cost lines separate, broken into the cost factors that differ,
+ * ranked by size over the horizon. A positive `amount` means the switch SAVES on that factor;
+ * negative means it COSTS more. The amounts sum exactly to compare().lifetimeSaving, because
+ * they are the same terms as cumulativeCostAt (running×years + reducing-balance depreciation +
+ * one-off repairs), differenced between the two scenarios.
+ */
+export function divergenceReasons(baseline, switchTo, rates) {
+  const y = rates.years;
+  const annual = (s, field) => (s[field] ?? 0) * y;
+  const reasons = [
+    { key: "energy", label: "Fuel vs electricity", amount: (annualEnergyCost(baseline, rates) - annualEnergyCost(switchTo, rates)) * y },
+    { key: "depreciation", label: "Depreciation", amount: depreciationLoss(baseline, y) - depreciationLoss(switchTo, y) },
+    { key: "servicing", label: "Servicing & repairs", amount: (annual(baseline, "servicingPerYear") + annual(baseline, "repairsPerYear")) - (annual(switchTo, "servicingPerYear") + annual(switchTo, "repairsPerYear")) },
+    { key: "insurance", label: "Insurance", amount: annual(baseline, "insurancePerYear") - annual(switchTo, "insurancePerYear") },
+    { key: "ved", label: "Road tax (VED)", amount: annual(baseline, "vedPerYear") - annual(switchTo, "vedPerYear") },
+    { key: "repairs", label: "One-off repairs", amount: repairsUpTo(baseline, y) - repairsUpTo(switchTo, y) },
+  ].filter((r) => Math.abs(r.amount) >= 1);
+  reasons.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+  return reasons;
 }
