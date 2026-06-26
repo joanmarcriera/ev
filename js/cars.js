@@ -41,14 +41,21 @@ export const CAR_GROUPS = [
   { label: "Hybrid", powertrain: "hybrid" },
 ];
 
-/** Fields a chosen car contributes to a scenario (mileage & charging mix are left untouched). */
-export function applyCarToScenario(scenario, car) {
+/** Fields a chosen car contributes to a scenario (mileage & charging mix are left untouched).
+ *  By default a baseline card represents a car you already OWN, so its current value is seeded from
+ *  the price and purchasePrice is cleared. Pass { asPurchase: true } for a baseline that is a car
+ *  you'd BUY (e.g. replacing a lost car) so it keeps purchasePrice and stays a "buy" shape. */
+export function applyCarToScenario(scenario, car, opts = {}) {
   const fields = ["powertrain", "mpg", "milesPerKwh", "purchasePrice",
     "depreciationPctPerYear", "insurancePerYear", "servicingPerYear", "vedPerYear"];
   const next = { ...scenario, carId: car.id, label: car.name };
   for (const f of fields) if (car[f] != null) next[f] = car[f];
-  // Baseline cars represent a car you already own: seed its current value from the price.
-  if (scenario.role === "baseline") next.currentValue = car.purchasePrice;
+  if (scenario.role === "baseline" && !opts.asPurchase) {
+    next.currentValue = car.purchasePrice; // a car you already own
+    delete next.purchasePrice;             // keep it a "keep" shape for assetValue0/upfrontCash
+  } else if (opts.asPurchase) {
+    delete next.currentValue;              // a car you'd buy — keep it a "buy" shape
+  }
   // Clear the efficiency field that doesn't apply to the new powertrain.
   if (car.powertrain === "ev") delete next.mpg; else delete next.milesPerKwh;
   return next;

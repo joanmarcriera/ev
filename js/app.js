@@ -8,6 +8,7 @@ import {
   createLineChart, createBarChart, updateLineChart, updateBarChart, setBreakEvenMarker,
 } from "./charts.js";
 import { CARS, CAR_GROUPS, applyCarToScenario } from "./cars.js";
+import { initOnboarding } from "./onboarding.js";
 
 const SERIES_COLORS = ["#D9772B", "#16A571", "#2E6BE6"]; // baseline, switch, third
 const MAX_SCENARIOS = 3;
@@ -86,10 +87,12 @@ const COMMON_FIELDS = [
 ];
 const CHARGE_FIELDS = ["homePct", "publicPct", "solarPct"];
 
+// Keyed off which value the scenario actually holds (a kept car has currentValue; a bought car —
+// including a bought baseline on the lost-car path — has purchasePrice), to match model.assetValue0.
 function valueField(s) {
-  return s.role === "baseline"
-    ? { f: "currentValue", label: "Current value £", step: 250, min: 0 }
-    : { f: "purchasePrice", label: "Purchase price £", step: 250, min: 0 };
+  return s.purchasePrice != null
+    ? { f: "purchasePrice", label: "Purchase price £", step: 250, min: 0 }
+    : { f: "currentValue", label: "Current value £", step: 250, min: 0 };
 }
 
 // ---------- render: scenario cards ----------
@@ -264,27 +267,47 @@ function recompute() {
 function renderVerdict(baseline, sw, cmp) {
   const box = $("#verdict");
   if (!baseline || !sw || !cmp) { box.innerHTML = ""; return; }
-  const { breakEvenYear, lifetimeSaving, upfrontCash } = cmp;
-  const better = lifetimeSaving >= 0;
-  let headline;
-  if (breakEvenYear === null) {
-    headline = better
-      ? `Cheaper overall, but doesn't break even within ${state.rates.years} years`
-      : `Costs more — keeping wins over ${state.rates.years} years`;
-  } else if (breakEvenYear === 0) {
-    headline = `Cheaper from year one`;
-  } else {
-    headline = `Pays for itself in <strong>year ${breakEvenYear.toFixed(1)}</strong>`;
-  }
+  const { headline, sub, better } = verdictCopy(baseline, sw, cmp, state.rates.years);
   box.className = "verdict " + (better ? "good" : "bad");
-  box.innerHTML = `
-    <p class="verdict-head">${headline}</p>
-    <p class="verdict-sub">
-      Over ${state.rates.years} years, <em>${esc(sw.label)}</em> is
-      <strong>${gbp(Math.abs(lifetimeSaving))} ${better ? "cheaper" : "dearer"}</strong>
-      than <em>${esc(baseline.label)}</em>.
-      Upfront cash needed now: <strong>${gbp(upfrontCash)}</strong>.
-    </p>`;
+  box.innerHTML = `<p class="verdict-head">${headline}</p><p class="verdict-sub">${sub}</p>`;
+}
+
+// Plain-language verdict for both situations. A kept baseline (no purchasePrice) is a "keep vs
+// switch" decision; a bought baseline (purchasePrice set) is a "buy vs buy" decision — e.g.
+// replacing a lost car — where nothing is kept, so "pays for itself" is reframed and the cash line
+// shows the GAP between the two purchases. All interpolated labels are HTML-escaped.
+function verdictCopy(baseline, sw, cmp, years) {
+  const { breakEvenYear, lifetimeSaving, upfrontCash, baselineUpfront = 0 } = cmp;
+  const better = lifetimeSaving >= 0; // the switch/EV is cheaper to own over the horizon
+  const isReplace = baseline.purchasePrice != null;
+  const swL = `<em>${esc(sw.label)}</em>`;
+  const baseL = `<em>${esc(baseline.label)}</em>`;
+
+  let headline;
+  if (isReplace) {
+    if (breakEvenYear === 0) headline = `${swL} is cheaper — from year one`;
+    else if (breakEvenYear !== null) headline = `${swL}'s higher price is repaid by <strong>year ${breakEvenYear.toFixed(1)}</strong>`;
+    else if (better) headline = `${swL} works out cheaper, but only beyond ${years} years`;
+    else headline = `${baseL} is the cheaper choice over ${years} years`;
+  } else {
+    if (breakEvenYear === 0) headline = `${swL} is cheaper than keeping — from year one`;
+    else if (breakEvenYear !== null) headline = `${swL} pays for itself in <strong>year ${breakEvenYear.toFixed(1)}</strong>`;
+    else if (better) headline = `Cheaper overall, but doesn't pay back within ${years} years`;
+    else headline = `Keeping ${baseL} is cheapest over the next ${years} years`;
+  }
+
+  const own = `Over ${years} years, ${swL} is
+    <strong>${gbp(Math.abs(lifetimeSaving))} ${better ? "cheaper" : "dearer"}</strong> to own than ${baseL}.`;
+  let cash;
+  if (isReplace) {
+    const gap = upfrontCash - baselineUpfront;
+    cash = Math.abs(gap) < 1
+      ? `Both need about the same cash up front.`
+      : `${swL} needs <strong>${gbp(Math.abs(gap))} ${gap > 0 ? "more" : "less"}</strong> cash up front.`;
+  } else {
+    cash = `Upfront cash needed now: <strong>${gbp(upfrontCash)}</strong>.`;
+  }
+  return { headline, sub: `${own} ${cash}`, better };
 }
 
 // "Why the lines diverge" — ranked cost factors that separate the two main scenarios.
@@ -428,6 +451,8 @@ function bindEvents() {
     catch { flash($("#share"), "Copy from address bar"); }
   });
 
+  $("#restart-onboard").addEventListener("click", openOnboarding);
+
   $("#to-report").addEventListener("click", () =>
     $("#report").scrollIntoView({ behavior: "smooth" }));
 }
@@ -443,6 +468,17 @@ function applyTemplate(key) {
   renderAll();
 }
 
+// Open the guided "Start here" front door. onComplete swaps in the built state and renders the
+// dashboard; onSkip just closes the overlay onto whatever is already there.
+function openOnboarding() {
+  const overlay = $("#onboard");
+  overlay.hidden = false;
+  initOnboarding({
+    onComplete: (s) => { state = s; renderAll(); overlay.hidden = true; },
+    onSkip: () => { overlay.hidden = true; },
+  });
+}
+
 function renderAll() {
   renderGlobals();
   renderScenarioCards();
@@ -455,9 +491,13 @@ function init() {
   const barCtx = $("#bar-chart").getContext("2d");
   lineChart = createLineChart(lineCtx);
   barChart = createBarChart(barCtx);
-  state = decodeState() ?? loadTemplate(DEFAULT_TEMPLATE);
+  // decodeState() is non-null only when the URL carries a shared #c= comparison; in that case skip
+  // the guided start and show exactly what was shared. A clean first visit opens the front door.
+  const shared = decodeState();
+  state = shared ?? loadTemplate(DEFAULT_TEMPLATE);
   bindEvents();
   renderAll();
+  if (!shared) openOnboarding();
 }
 
 document.addEventListener("DOMContentLoaded", init);

@@ -70,9 +70,12 @@ export function annualBreakdown(scenario, rates) {
   };
 }
 
-/** The capital tied up in this car today: current resale value if kept, purchase price if bought. */
+/** The capital tied up in this car today: purchase price if bought, current resale value if kept.
+ *  Keyed off which field is present, not the scenario's role, so a "buy vs buy" comparison (e.g.
+ *  replacing a lost car — every option is a purchase, none is kept) depreciates each option from its
+ *  purchase price. A kept car carries currentValue and no purchasePrice, so it is unaffected. */
 export function assetValue0(scenario) {
-  return scenario.role === "baseline" ? (scenario.currentValue ?? 0) : (scenario.purchasePrice ?? 0);
+  return scenario.purchasePrice != null ? scenario.purchasePrice : (scenario.currentValue ?? 0);
 }
 
 /** Depreciation lost by end of year t (reducing-balance). */
@@ -98,10 +101,12 @@ export function cumulativeSeries(scenario, rates) {
   return out;
 }
 
-/** Upfront cash needed to take this option today (0 for keeping the current car). */
+/** Upfront cash needed to take this option today. £0 for keeping the current car (no purchasePrice);
+ *  purchase price minus any trade-in for a bought car. Keyed off purchasePrice presence so a bought
+ *  baseline (lost-car replacement) reports its own cash instead of £0. */
 export function upfrontCash(scenario) {
-  if (scenario.role === "baseline") return 0;
-  return Math.max(0, (scenario.purchasePrice ?? 0) - (scenario.tradeInValue ?? 0));
+  if (scenario.purchasePrice == null) return 0;
+  return Math.max(0, scenario.purchasePrice - (scenario.tradeInValue ?? 0));
 }
 
 /** All-in pence per mile over the full horizon. */
@@ -141,7 +146,9 @@ export function compare(baseline, switchTo, rates) {
   }
   const lifetimeSaving =
     cumulativeCostAt(baseline, rates, rates.years) - cumulativeCostAt(switchTo, rates, rates.years);
-  return { breakEvenYear, lifetimeSaving, upfrontCash: upfrontCash(switchTo) };
+  // upfrontCash is the switch's cash; baselineUpfront is the baseline's (0 when the baseline is a
+  // kept car, non-zero on a buy-vs-buy comparison) so the verdict can show the cash GAP between them.
+  return { breakEvenYear, lifetimeSaving, upfrontCash: upfrontCash(switchTo), baselineUpfront: upfrontCash(baseline) };
 }
 
 /**

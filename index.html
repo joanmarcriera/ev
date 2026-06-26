@@ -22,6 +22,7 @@
     <div class="templates" role="group" aria-label="Start from a template">
       <button class="chip" data-template="keep-vs-used-ev-solar">Keep vs used EV + solar</button>
       <button class="chip" data-template="mileage-jumped">Mileage jumped — now or wait?</button>
+      <button class="chip" data-template="replace-lost-car">Lost your car?</button>
     </div>
 
     <div class="globals">
@@ -29,9 +30,22 @@
         <span>Years <strong id="years-val">7</strong></span>
         <input id="years" type="range" min="1" max="15" step="1" value="7">
       </label>
+      <button id="restart-onboard" class="btn-ghost" title="Answer a few plain questions to set up a comparison">Start here</button>
       <button id="share" class="btn-ghost" title="Copy a shareable link to this comparison">Share</button>
     </div>
   </header>
+
+  <!-- ===================== GUIDED START (novice front door) ===================== -->
+  <!-- Shown only on a clean first visit (no #c= hash). Plain-language questions build a sensible
+       comparison; the dashboard below stays for fine-tuning. Body is rendered by js/onboarding.js. -->
+  <div id="onboard" class="onboard" hidden role="dialog" aria-modal="true" aria-labelledby="onboard-title">
+    <div class="onboard-card">
+      <button class="onboard-skip" data-onboard="skip">Skip — I know my numbers</button>
+      <h2 id="onboard-title">Start here</h2>
+      <p class="onboard-lede">A few plain questions — no car knowledge needed.</p>
+      <div id="onboard-body"></div>
+    </div>
+  </div>
 
   <main class="dashboard">
     <!-- left: editable scenarios -->
