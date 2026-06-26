@@ -13,11 +13,43 @@ const reduceMotion = () =>
 Chart.defaults.font.family = FONT;
 Chart.defaults.color = INK;
 
+// Draws a dashed vertical "break-even" line at chart.$breakEven (in x data units).
+const breakEvenPlugin = {
+  id: "breakEven",
+  afterDatasetsDraw(chart) {
+    const yr = chart.$breakEven;
+    if (yr == null) return;
+    const { ctx, chartArea: area, scales } = chart;
+    const x = scales.x.getPixelForValue(yr);
+    if (!Number.isFinite(x)) return;
+    ctx.save();
+    ctx.strokeStyle = "#2E6BE6";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(x, area.top);
+    ctx.lineTo(x, area.bottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#2E6BE6";
+    ctx.font = "600 11px 'Space Grotesk', sans-serif";
+    ctx.textAlign = Math.abs(x - area.right) < 60 ? "right" : "left";
+    ctx.fillText(`break-even · yr ${yr.toFixed(1)}`, x + (ctx.textAlign === "right" ? -6 : 6), area.top + 12);
+    ctx.restore();
+  },
+};
+
+/** Set (or clear with null) the break-even marker on the line chart. */
+export function setBreakEvenMarker(chart, year) {
+  chart.$breakEven = year;
+}
+
 /** Cumulative net cost over the holding period — the hero. One line per scenario. */
 export function createLineChart(ctx) {
   return new Chart(ctx, {
     type: "line",
     data: { labels: [], datasets: [] },
+    plugins: [breakEvenPlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,

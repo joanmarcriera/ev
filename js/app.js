@@ -1,12 +1,13 @@
 // app.js — wires inputs ↔ model ↔ charts. Framework-free ES module.
 import {
   cumulativeSeries, annualBreakdown, pencePerMile, runningPencePerMile,
-  cumulativeCostAt, compare,
+  cumulativeCostAt, compare, divergenceReasons,
 } from "./model.js";
 import { TEMPLATES, DEFAULT_TEMPLATE, loadTemplate } from "./templates.js";
 import {
-  createLineChart, createBarChart, updateLineChart, updateBarChart,
+  createLineChart, createBarChart, updateLineChart, updateBarChart, setBreakEvenMarker,
 } from "./charts.js";
+import { CARS, CAR_GROUPS, applyCarToScenario } from "./cars.js";
 
 const SERIES_COLORS = ["#D9772B", "#16A571", "#2E6BE6"]; // baseline, switch, third
 const MAX_SCENARIOS = 3;
@@ -57,13 +58,14 @@ function sanitizeState(o) {
   };
   const numFields = ["annualMiles", "mpg", "milesPerKwh", "homePct", "publicPct", "solarPct",
     "purchasePrice", "currentValue", "tradeInValue", "depreciationPctPerYear",
-    "insurancePerYear", "servicingPerYear", "vedPerYear"];
+    "insurancePerYear", "servicingPerYear", "repairsPerYear", "vedPerYear", "ageYears"];
   const scenarios = o.scenarios.slice(0, MAX_SCENARIOS).map((s, i) => {
     const clean = {
       id: (String(s.id ?? "opt" + i).replace(/[^a-z0-9_-]/gi, "") || "opt" + i).slice(0, 40),
       label: String(s.label ?? "Option").slice(0, 60),
       role: s.role === "baseline" ? "baseline" : (s.role === "compare" ? "compare" : "switch"),
       powertrain: POWERTRAINS.includes(s.powertrain) ? s.powertrain : "petrol",
+      milesUnit: s.milesUnit === "week" ? "week" : "year",
     };
     for (const f of numFields) if (s[f] != null) clean[f] = num(s[f]);
     if (Array.isArray(s.bigRepairs)) {
@@ -76,12 +78,13 @@ function sanitizeState(o) {
 
 // ---------- input field definitions ----------
 const COMMON_FIELDS = [
-  { f: "annualMiles", label: "Miles / year", step: 500, min: 0 },
   { f: "insurancePerYear", label: "Insurance £/yr", step: 25, min: 0 },
   { f: "servicingPerYear", label: "Servicing £/yr", step: 25, min: 0 },
+  { f: "repairsPerYear", label: "Repairs £/yr", step: 25, min: 0 },
   { f: "vedPerYear", label: "Road tax £/yr", step: 5, min: 0 },
   { f: "depreciationPctPerYear", label: "Depreciation %/yr", step: 0.01, min: 0, max: 0.4, pct: true },
 ];
+const CHARGE_FIELDS = ["homePct", "publicPct", "solarPct"];
 
 function valueField(s) {
   return s.role === "baseline"
@@ -106,6 +109,7 @@ function renderScenarioCards() {
         <input class="scenario-name" data-sid="${s.id}" data-field="label" value="${esc(s.label)}" aria-label="Scenario name">
         ${removable ? `<button class="remove" data-remove="${s.id}" aria-label="Remove option">×</button>` : ""}
       </header>
+      ${carPicker(s)}
       <label class="row">
         <span>Powertrain</span>
         <select data-sid="${s.id}" data-field="powertrain">
@@ -116,13 +120,51 @@ function renderScenarioCards() {
       ${s.powertrain === "ev"
         ? numberRow(s, { f: "milesPerKwh", label: "Miles / kWh", step: 0.1, min: 0.5 }) + chargingSplit(s)
         : numberRow(s, { f: "mpg", label: "MPG", step: 1, min: 1 })}
+      ${milesRow(s)}
       ${COMMON_FIELDS.map((cf) => numberRow(s, cf)).join("")}
+      ${ageRow(s)}
     `;
     wrap.appendChild(card);
   });
 
   const addBtn = $("#add-scenario");
   addBtn.disabled = state.scenarios.length >= MAX_SCENARIOS;
+}
+
+function carPicker(s) {
+  const groups = CAR_GROUPS.map((g) => {
+    const opts = CARS.filter((c) => c.powertrain === g.powertrain)
+      .map((c) => `<option value="${c.id}" ${s.carId === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("");
+    return `<optgroup label="${g.label}">${opts}</optgroup>`;
+  }).join("");
+  return `<label class="row car-pick">
+    <span>Pick a car</span>
+    <select data-sid="${s.id}" data-field="carId" title="Prefill from a typical UK model — everything stays editable">
+      <option value="">— custom —</option>${groups}
+    </select>
+  </label>`;
+}
+
+// Miles input with a year ⇄ week unit toggle. annualMiles is always the stored value.
+function milesRow(s) {
+  const unit = s.milesUnit === "week" ? "week" : "year";
+  const annual = s.annualMiles ?? 0;
+  const shown = unit === "week" ? Math.round(annual / 52) : Math.round(annual);
+  return `<label class="row">
+    <span>Miles / <button type="button" class="unit-toggle" data-sid="${s.id}" data-toggle="milesUnit" title="Switch between per-year and per-week">${unit}</button></span>
+    <input type="number" inputmode="decimal" data-sid="${s.id}" data-field="annualMiles" data-unit="${unit}"
+           value="${shown}" step="${unit === "week" ? 10 : 500}" min="0">
+  </label>`;
+}
+
+function ageRow(s) {
+  if (s.role !== "baseline") return "";
+  const age = s.ageYears ?? 0;
+  const endAge = age + (state.rates.years ?? 0);
+  const note = (age >= 12 || endAge >= 18) && age > 0
+    ? `<p class="card-note">At ~${age} yrs old this car would be ~${endAge} by the end of the comparison — it may not last. Reflect that in “Repairs £/yr” or shorten the horizon.</p>`
+    : "";
+  return numberRow(s, { f: "ageYears", label: "Age (yrs)", step: 1, min: 0 }) + note;
 }
 
 function numberRow(s, cf) {
@@ -137,14 +179,12 @@ function numberRow(s, cf) {
 }
 
 function chargingSplit(s) {
-  const split = [
-    { f: "homePct", label: "Home %" },
-    { f: "publicPct", label: "Public %" },
-    { f: "solarPct", label: "Solar %" },
-  ];
+  const labels = { homePct: "Home %", publicPct: "Public %", solarPct: "Solar %" };
+  const total = CHARGE_FIELDS.reduce((sum, f) => sum + (s[f] ?? 0), 0);
   return `<div class="charging" role="group" aria-label="EV charging mix">
-    ${split.map((c) => `<label class="mini"><span>${c.label}</span>
-      <input type="number" data-sid="${s.id}" data-field="${c.f}" value="${s[c.f] ?? 0}" min="0" max="100" step="5"></label>`).join("")}
+    ${CHARGE_FIELDS.map((f) => `<label class="mini"><span>${labels[f]}</span>
+      <input type="number" data-sid="${s.id}" data-field="${f}" value="${s[f] ?? 0}" min="0" max="100" step="5"></label>`).join("")}
+    <p class="mix ${total === 100 ? "ok" : "bad"}" data-mix="${s.id}">Mix ${total}%${total === 100 ? " ✓" : " — aim for 100%"}</p>
   </div>`;
 }
 
@@ -201,26 +241,30 @@ function gaugeSvg(label, value, max, color) {
 // ---------- recompute everything ----------
 function recompute() {
   const rates = state.rates;
+  const baseline = state.scenarios.find((s) => s.role === "baseline") ?? state.scenarios[0];
+  const sw = state.scenarios.find((s) => s.role !== "baseline") ?? state.scenarios[1];
+  const cmp = baseline && sw ? compare(baseline, sw, rates) : null;
+
   const datasets = state.scenarios.map((s, i) => ({
     label: s.label, color: SERIES_COLORS[i] ?? "#2E6BE6", series: cumulativeSeries(s, rates),
   }));
+  setBreakEvenMarker(lineChart, cmp && cmp.breakEvenYear ? cmp.breakEvenYear : null);
   updateLineChart(lineChart, { years: rates.years, datasets });
   updateBarChart(barChart, {
     labels: state.scenarios.map((s) => s.label),
     breakdowns: state.scenarios.map((s) => annualBreakdown(s, rates)),
   });
   renderGauges();
-  renderVerdict();
+  renderVerdict(baseline, sw, cmp);
+  renderDivergence(baseline, sw);
   renderReportTable();
   encodeState();
 }
 
-function renderVerdict() {
-  const baseline = state.scenarios.find((s) => s.role === "baseline") ?? state.scenarios[0];
-  const sw = state.scenarios.find((s) => s.role !== "baseline") ?? state.scenarios[1];
+function renderVerdict(baseline, sw, cmp) {
   const box = $("#verdict");
-  if (!baseline || !sw) { box.innerHTML = ""; return; }
-  const { breakEvenYear, lifetimeSaving, upfrontCash } = compare(baseline, sw, state.rates);
+  if (!baseline || !sw || !cmp) { box.innerHTML = ""; return; }
+  const { breakEvenYear, lifetimeSaving, upfrontCash } = cmp;
   const better = lifetimeSaving >= 0;
   let headline;
   if (breakEvenYear === null) {
@@ -241,6 +285,29 @@ function renderVerdict() {
       than <em>${esc(baseline.label)}</em>.
       Upfront cash needed now: <strong>${gbp(upfrontCash)}</strong>.
     </p>`;
+}
+
+// "Why the lines diverge" — ranked cost factors that separate the two main scenarios.
+function renderDivergence(baseline, sw) {
+  const box = $("#divergence");
+  if (!box) return;
+  if (!baseline || !sw) { box.innerHTML = ""; return; }
+  const reasons = divergenceReasons(baseline, sw, state.rates);
+  if (!reasons.length) { box.innerHTML = `<p class="why-head">The two options cost almost exactly the same.</p>`; return; }
+  const max = Math.max(...reasons.map((r) => Math.abs(r.amount)));
+  const rows = reasons.map((r) => {
+    const saves = r.amount >= 0; // baseline costs more on this factor → switch saves
+    const pct = Math.round((Math.abs(r.amount) / max) * 100);
+    const color = saves ? "var(--ev)" : "var(--ice)";
+    return `<li class="why-row">
+      <span class="why-label">${esc(r.label)}</span>
+      <span class="why-bar"><span style="width:${pct}%;background:${color}"></span></span>
+      <span class="why-amt" style="color:${color}">${saves ? "−" : "+"}${gbp(Math.abs(r.amount))}</span>
+    </li>`;
+  }).join("");
+  box.innerHTML = `
+    <p class="why-head">Why the lines separate <span class="why-key">(<span style="color:var(--ev)">green</span> = ${esc(sw.label)} saves · <span style="color:var(--ice)">amber</span> = costs more)</span></p>
+    <ol class="why-list">${rows}</ol>`;
 }
 
 function renderReportTable() {
@@ -269,23 +336,60 @@ function onInput(e) {
   const s = state.scenarios.find((x) => x.id === sid);
   if (!s) return;
   const field = el.dataset.field;
-  if (field === "label") { s.label = el.value; renderVerdict(); recompute(); return; }
-  if (field === "powertrain") { s.powertrain = el.value; renderScenarioCards(); recompute(); return; }
+  if (field === "label") { s.label = el.value; recompute(); return; }
+  if (field === "powertrain") { s.powertrain = el.value; delete s.carId; renderScenarioCards(); recompute(); return; }
+  if (field === "carId") {
+    const car = CARS.find((c) => c.id === el.value);
+    if (car) {
+      const idx = state.scenarios.indexOf(s);
+      state.scenarios[idx] = applyCarToScenario(s, car);
+    } else { s.carId = ""; }
+    renderScenarioCards(); recompute(); return;
+  }
   let v = parseFloat(el.value);
   if (Number.isNaN(v)) return;
+  // Charging mix: clamp so the three never exceed 100%, and update the live indicator.
+  if (CHARGE_FIELDS.includes(field)) {
+    v = Math.max(0, Math.min(100, v));
+    const others = CHARGE_FIELDS.filter((f) => f !== field).reduce((sum, f) => sum + (s[f] ?? 0), 0);
+    if (v + others > 100) v = Math.max(0, 100 - others);
+    if (String(v) !== el.value) el.value = v;
+    s[field] = v;
+    updateMixIndicator(el, s);
+    recompute();
+    return;
+  }
+  // Miles: input may be expressed per week; store the annual figure.
+  if (field === "annualMiles" && el.dataset.unit === "week") v = v * 52;
   if (el.dataset.pct) v = v / 100;
   s[field] = v;
   recompute();
+  // Refresh the age "may not last" note on blur (change), not per keystroke, to keep focus.
+  if (field === "ageYears" && e.type === "change") renderScenarioCards();
+}
+
+function updateMixIndicator(el, s) {
+  const card = el.closest(".scenario");
+  const mix = card && card.querySelector(".mix");
+  if (!mix) return;
+  const total = CHARGE_FIELDS.reduce((sum, f) => sum + (s[f] ?? 0), 0);
+  mix.textContent = `Mix ${total}%` + (total === 100 ? " ✓" : " — aim for 100%");
+  mix.className = "mix " + (total === 100 ? "ok" : "bad");
 }
 
 function bindEvents() {
   $("#scenario-cards").addEventListener("input", onInput);
   $("#scenario-cards").addEventListener("change", onInput);
   $("#scenario-cards").addEventListener("click", (e) => {
-    const id = e.target.dataset?.remove;
-    if (!id) return;
-    state.scenarios = state.scenarios.filter((s) => s.id !== id);
-    renderScenarioCards(); recompute();
+    const ds = e.target.dataset || {};
+    if (ds.remove) {
+      state.scenarios = state.scenarios.filter((s) => s.id !== ds.remove);
+      renderScenarioCards(); recompute(); return;
+    }
+    if (ds.toggle === "milesUnit") {
+      const s = state.scenarios.find((x) => x.id === ds.sid);
+      if (s) { s.milesUnit = s.milesUnit === "week" ? "year" : "week"; renderScenarioCards(); }
+    }
   });
 
   $("#add-scenario").addEventListener("click", () => {
@@ -300,6 +404,7 @@ function bindEvents() {
     $("#years-val").textContent = state.rates.years;
     recompute();
   });
+  $("#years").addEventListener("change", () => renderScenarioCards()); // refresh age note on release
 
   const rateMap = {
     "rate-petrol": "petrolPerLitre", "rate-diesel": "dieselPerLitre",

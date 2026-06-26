@@ -135,6 +135,25 @@ a { color: var(--accent); }
 .charging { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0; }
 .mini { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); }
 .mini input { font: inherit; padding: 4px; border: 1px solid var(--line); border-radius: 6px; text-align: center; }
+.mix { grid-column: 1 / -1; margin: 2px 0 0; font-size: 11px; text-align: right; }
+.mix.ok { color: var(--ev); }
+.mix.bad { color: var(--ice); }
+
+/* car preset picker */
+.car-pick select { background: #F4F8F6; font-weight: 500; }
+
+/* miles per year/week toggle */
+.unit-toggle {
+  border: none; background: var(--bg); color: var(--accent); cursor: pointer;
+  font: inherit; font-size: 12px; padding: 1px 6px; border-radius: 5px; text-decoration: underline dotted;
+}
+.unit-toggle:hover { background: var(--line); }
+
+/* per-card note (e.g. old-car warning) */
+.card-note {
+  margin: 6px 0 0; font-size: 11.5px; line-height: 1.35; color: #8a5a1c;
+  background: #FBF0E2; border-radius: 7px; padding: 6px 8px;
+}
 
 .btn-add {
   border: 1px dashed var(--grid); background: transparent; color: var(--muted);
@@ -162,6 +181,19 @@ a { color: var(--accent); }
 .chart-box { position: relative; flex: 1; min-height: 0; }
 .chart-box.small { min-height: 150px; flex: none; height: 150px; }
 .chart-box canvas { position: absolute; inset: 0; }
+/* slightly smaller hero chart so the "why they diverge" panel fits below it */
+.hero-chart { flex: 1 1 0; min-height: 150px; }
+
+/* why-they-diverge panel */
+.why { flex: 0 0 auto; max-height: 36%; overflow-y: auto; border-top: 1px solid var(--line); padding-top: 8px; }
+.why-head { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+.why-key { font-weight: 400; color: var(--muted); font-size: 11.5px; }
+.why-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.why-row { display: grid; grid-template-columns: 130px 1fr 72px; align-items: center; gap: 8px; font-size: 12.5px; }
+.why-label { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.why-bar { background: var(--bg); border-radius: 4px; height: 9px; overflow: hidden; }
+.why-bar > span { display: block; height: 100%; border-radius: 4px; }
+.why-amt { text-align: right; font-weight: 600; }
 
 /* ---------------- side: gauges + breakdown ---------------- */
 .side-h { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 6px 0 2px; font-family: "Inter", sans-serif; }
@@ -198,8 +230,22 @@ a { color: var(--accent); }
 .method { padding-left: 18px; }
 .method li { margin: 6px 0; }
 .sources { font-size: 13px; color: var(--muted); }
+.links-grid {
+  list-style: none; padding: 0; margin: 8px 0 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 6px 20px;
+  font-size: 13.5px;
+}
+.links-grid li { color: var(--muted); }
 .disclaimer { font-size: 12.5px; color: var(--muted); margin-top: 28px; }
-.site-foot { font-size: 13px; color: var(--muted); margin-top: 12px; }
+.site-foot {
+  font-size: 13px; color: var(--muted); margin-top: 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.coffee {
+  text-decoration: none; font-size: 20px; line-height: 1; opacity: .55;
+  transition: opacity .15s, transform .15s; filter: grayscale(1);
+}
+.coffee:hover { opacity: 1; filter: grayscale(0); transform: scale(1.15); }
 
 /* ---------------- responsive ---------------- */
 @media (max-width: 1080px) {
