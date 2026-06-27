@@ -78,6 +78,36 @@ test("divergenceReasons sum exactly to the lifetime saving", () => {
   }
 });
 
+test("chargerInstall adds a one-off year-0 cost, constant across the horizon", () => {
+  const base = { role: "switch", powertrain: "ev", annualMiles: 9000, milesPerKwh: 3.6, homePct: 100, purchasePrice: 15000, depreciationPctPerYear: 0.12 };
+  const withCharger = { ...base, chargerInstall: 1000 };
+  for (const t of [0, 1, 5]) {
+    approx(cumulativeCostAt(withCharger, rates, t) - cumulativeCostAt(base, rates, t), 1000, 0.01);
+  }
+});
+
+test("upfrontCash includes the charger install for a bought EV, but a kept car needs no cash", () => {
+  approx(upfrontCash({ role: "switch", purchasePrice: 15000, tradeInValue: 4000, chargerInstall: 1000 }), 12000, 0.01);
+  assert.equal(upfrontCash({ role: "baseline", currentValue: 4000, chargerInstall: 1000 }), 0); // kept: no purchasePrice
+});
+
+test("divergenceReasons include charger install and still sum to the lifetime saving", () => {
+  const keep = {
+    role: "baseline", powertrain: "petrol", annualMiles: 12000, mpg: 42,
+    currentValue: 4000, depreciationPctPerYear: 0.1, insurancePerYear: 350, servicingPerYear: 350, vedPerYear: 180,
+  };
+  const ev = {
+    role: "switch", powertrain: "ev", annualMiles: 12000, milesPerKwh: 3.6, homePct: 80, publicPct: 20,
+    purchasePrice: 16000, tradeInValue: 4000, depreciationPctPerYear: 0.12,
+    insurancePerYear: 500, servicingPerYear: 150, vedPerYear: 0, chargerInstall: 1000,
+  };
+  const r = { ...rates, years: 7 };
+  const reasons = divergenceReasons(keep, ev, r);
+  assert.ok(reasons.some((x) => x.key === "charger"), "expected a charger-install factor");
+  const summed = reasons.reduce((s, x) => s + x.amount, 0);
+  approx(summed, compare(keep, ev, r).lifetimeSaving, 0.5);
+});
+
 test("EV per-mile is cheaper than petrol per-mile (research sanity band)", () => {
   const ev = { powertrain: "ev", annualMiles: 12000, milesPerKwh: 3.6, homePct: 100 };
   const ice = { powertrain: "petrol", annualMiles: 12000, mpg: 45 };
