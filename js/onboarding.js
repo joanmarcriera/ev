@@ -64,10 +64,15 @@ const pickCar = (powertrain, budget) =>
 function applyDriving(st, answers) {
   const miles = answers.miles?.miles ?? 9000;
   const split = answers.charging?.split ?? { homePct: 80, publicPct: 20, solarPct: 0 };
+  const canChargeAtHome = (split.homePct + split.solarPct) > 0;
   st.scenarios.forEach((sc) => {
     sc.annualMiles = miles;
     sc.milesUnit = "year";
-    if (sc.powertrain === "ev") { sc.homePct = split.homePct; sc.publicPct = split.publicPct; sc.solarPct = split.solarPct; }
+    if (sc.powertrain === "ev") {
+      sc.homePct = split.homePct; sc.publicPct = split.publicPct; sc.solarPct = split.solarPct;
+      // A home charge point is a one-off cost only if they can actually charge at home.
+      sc.chargerInstall = canChargeAtHome ? 1000 : 0;
+    }
   });
   return st;
 }

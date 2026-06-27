@@ -89,9 +89,15 @@ function repairsUpTo(scenario, t) {
   return (scenario.bigRepairs ?? []).filter((r) => r.year <= t).reduce((sum, r) => sum + r.amount, 0);
 }
 
-/** Cumulative cost at integer year t (t may be 0..years). */
+/** Cumulative cost at integer year t (t may be 0..years). A one-off charger install (EV home
+ *  charge point) is cash spent on day one, so it is present at every t including 0. */
 export function cumulativeCostAt(scenario, rates, t) {
-  return annualRunningCost(scenario, rates) * t + depreciationLoss(scenario, t) + repairsUpTo(scenario, t);
+  return (
+    annualRunningCost(scenario, rates) * t +
+    depreciationLoss(scenario, t) +
+    repairsUpTo(scenario, t) +
+    (scenario.chargerInstall ?? 0)
+  );
 }
 
 /** Cumulative cost series [t=0 .. t=years] for charting. */
@@ -106,7 +112,7 @@ export function cumulativeSeries(scenario, rates) {
  *  baseline (lost-car replacement) reports its own cash instead of £0. */
 export function upfrontCash(scenario) {
   if (scenario.purchasePrice == null) return 0;
-  return Math.max(0, scenario.purchasePrice - (scenario.tradeInValue ?? 0));
+  return Math.max(0, scenario.purchasePrice - (scenario.tradeInValue ?? 0)) + (scenario.chargerInstall ?? 0);
 }
 
 /** All-in pence per mile over the full horizon. */
@@ -168,6 +174,7 @@ export function divergenceReasons(baseline, switchTo, rates) {
     { key: "insurance", label: "Insurance", amount: annual(baseline, "insurancePerYear") - annual(switchTo, "insurancePerYear") },
     { key: "ved", label: "Road tax (VED)", amount: annual(baseline, "vedPerYear") - annual(switchTo, "vedPerYear") },
     { key: "repairs", label: "One-off repairs", amount: repairsUpTo(baseline, y) - repairsUpTo(switchTo, y) },
+    { key: "charger", label: "Charger install", amount: (baseline.chargerInstall ?? 0) - (switchTo.chargerInstall ?? 0) },
   ].filter((r) => Math.abs(r.amount) >= 1);
   reasons.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
   return reasons;
