@@ -14,6 +14,19 @@ export const CARS = [
   { id: "id3", name: "VW ID.3 58 kWh", powertrain: "ev", milesPerKwh: 4.0, purchasePrice: 17000, depreciationPctPerYear: 0.12, insurancePerYear: 540, servicingPerYear: 160, vedPerYear: 0 },
   { id: "ioniq5", name: "Hyundai Ioniq 5 73 kWh", powertrain: "ev", milesPerKwh: 3.7, purchasePrice: 22000, depreciationPctPerYear: 0.12, insurancePerYear: 580, servicingPerYear: 160, vedPerYear: 195 },
   { id: "ioniq28", name: "Hyundai Ioniq Electric 28 kWh", powertrain: "ev", milesPerKwh: 4.5, purchasePrice: 11000, depreciationPctPerYear: 0.12, insurancePerYear: 480, servicingPerYear: 150, vedPerYear: 0 },
+  // Electric SUVs / crossovers — the affordable used-SUV segment (~£9–14k, 150+ mile range)
+  { id: "mgzsev", name: "MG ZS EV Long Range", powertrain: "ev", milesPerKwh: 3.6, purchasePrice: 12000, depreciationPctPerYear: 0.13, insurancePerYear: 480, servicingPerYear: 150, vedPerYear: 0 },
+  { id: "e2008", name: "Peugeot e-2008 50 kWh", powertrain: "ev", milesPerKwh: 3.8, purchasePrice: 13000, depreciationPctPerYear: 0.13, insurancePerYear: 500, servicingPerYear: 160, vedPerYear: 0 },
+  { id: "mokkae", name: "Vauxhall Mokka-e 50 kWh", powertrain: "ev", milesPerKwh: 3.8, purchasePrice: 12500, depreciationPctPerYear: 0.13, insurancePerYear: 480, servicingPerYear: 160, vedPerYear: 0 },
+  { id: "ec4", name: "Citroen e-C4 50 kWh", powertrain: "ev", milesPerKwh: 3.7, purchasePrice: 13000, depreciationPctPerYear: 0.13, insurancePerYear: 490, servicingPerYear: 160, vedPerYear: 0 },
+  { id: "soulev", name: "Kia Soul EV 64 kWh", powertrain: "ev", milesPerKwh: 3.8, purchasePrice: 14000, depreciationPctPerYear: 0.12, insurancePerYear: 500, servicingPerYear: 150, vedPerYear: 0 },
+  // Larger / newer electric SUVs (broader budget)
+  { id: "id4", name: "VW ID.4 Pro 77 kWh", powertrain: "ev", milesPerKwh: 3.6, purchasePrice: 19000, depreciationPctPerYear: 0.12, insurancePerYear: 560, servicingPerYear: 170, vedPerYear: 195 },
+  { id: "enyaq", name: "Skoda Enyaq 60", powertrain: "ev", milesPerKwh: 3.6, purchasePrice: 20000, depreciationPctPerYear: 0.12, insurancePerYear: 560, servicingPerYear: 170, vedPerYear: 195 },
+  { id: "ariya", name: "Nissan Ariya 63 kWh", powertrain: "ev", milesPerKwh: 3.5, purchasePrice: 20000, depreciationPctPerYear: 0.13, insurancePerYear: 560, servicingPerYear: 160, vedPerYear: 195 },
+  { id: "atto3", name: "BYD Atto 3 60 kWh", powertrain: "ev", milesPerKwh: 3.7, purchasePrice: 19000, depreciationPctPerYear: 0.13, insurancePerYear: 540, servicingPerYear: 150, vedPerYear: 195 },
+  { id: "xc40", name: "Volvo XC40 Recharge", powertrain: "ev", milesPerKwh: 3.2, purchasePrice: 22000, depreciationPctPerYear: 0.12, insurancePerYear: 600, servicingPerYear: 180, vedPerYear: 195 },
+  { id: "modely", name: "Tesla Model Y RWD", powertrain: "ev", milesPerKwh: 3.9, purchasePrice: 24000, depreciationPctPerYear: 0.12, insurancePerYear: 620, servicingPerYear: 180, vedPerYear: 195 },
 
   // --- Petrol ---
   { id: "fiesta", name: "Ford Fiesta 1.0", powertrain: "petrol", mpg: 50, purchasePrice: 8000, depreciationPctPerYear: 0.10, insurancePerYear: 380, servicingPerYear: 280, vedPerYear: 180 },
