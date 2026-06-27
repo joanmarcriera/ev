@@ -7,7 +7,7 @@ import { TEMPLATES, DEFAULT_TEMPLATE, loadTemplate } from "./templates.js";
 import {
   createLineChart, createBarChart, updateLineChart, updateBarChart, setBreakEvenMarker,
 } from "./charts.js";
-import { CARS, CAR_GROUPS, applyCarToScenario } from "./cars.js";
+import { CARS, CAR_GROUPS, applyCarToScenario, normalizeForPowertrain } from "./cars.js";
 import { initOnboarding } from "./onboarding.js";
 import { relevantLinks, nudgeLink } from "./links.js";
 
@@ -73,7 +73,9 @@ function sanitizeState(o) {
     if (Array.isArray(s.bigRepairs)) {
       clean.bigRepairs = s.bigRepairs.slice(0, 20).map((b) => ({ year: num(b.year), amount: num(b.amount) }));
     }
-    return clean;
+    // Reconcile efficiency/charging fields with the powertrain so a hand-edited or stale link can't
+    // carry a charger install / solar mix on an ICE option, or leave an EV without miles-per-kWh.
+    return normalizeForPowertrain(clean);
   });
   return { key: o.key, label: o.label, blurb: o.blurb, rates, scenarios };
 }
@@ -386,7 +388,15 @@ function onInput(e) {
   if (!s) return;
   const field = el.dataset.field;
   if (field === "label") { s.label = el.value; recompute(); return; }
-  if (field === "powertrain") { s.powertrain = el.value; delete s.carId; renderScenarioCards(); recompute(); return; }
+  if (field === "powertrain") {
+    // Reconcile efficiency/charging fields with the new powertrain so we never leave mpg/milesPerKwh
+    // undefined (→ NaN costs) or a stale charger-install / solar mix on a now-ICE car.
+    s.powertrain = el.value;
+    delete s.carId;
+    const idx = state.scenarios.indexOf(s);
+    state.scenarios[idx] = normalizeForPowertrain(s);
+    renderScenarioCards(); recompute(); return;
+  }
   if (field === "carId") {
     const car = CARS.find((c) => c.id === el.value);
     if (car) {
@@ -494,19 +504,59 @@ function applyTemplate(key) {
   renderAll();
 }
 
+// Keep keyboard focus inside an open modal: Tab/Shift+Tab cycle within `container`. Queries the
+// focusable set live on each Tab, so it follows the onboarding step machine re-rendering its body.
+function trapFocus(container) {
+  const SEL = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const onKeydown = (e) => {
+    if (e.key !== "Tab") return;
+    const items = [...container.querySelectorAll(SEL)].filter((el) => el.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+  container.addEventListener("keydown", onKeydown);
+  return () => container.removeEventListener("keydown", onKeydown);
+}
+
 // Open the guided "Start here" front door. onComplete swaps in the built state and renders the
-// dashboard; onSkip just closes the overlay onto whatever is already there.
+// dashboard; onSkip just closes the overlay onto whatever is already there. As a proper modal it
+// moves focus inside, traps Tab while open, and restores focus to the trigger on close.
 function openOnboarding() {
   const overlay = $("#onboard");
+  const lastFocused = document.activeElement;
   overlay.hidden = false;
+  const releaseTrap = trapFocus(overlay);
+  const close = () => {
+    releaseTrap();
+    overlay.hidden = true;
+    if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+  };
   initOnboarding({
-    onComplete: (s) => { state = s; renderAll(); overlay.hidden = true; },
-    onSkip: () => { overlay.hidden = true; },
+    onComplete: (s) => { state = s; renderAll(); close(); },
+    onSkip: () => { close(); },
   });
+  // Move focus into the dialog (first choice button if present, else the skip control).
+  const target = overlay.querySelector(".onboard-choice") || overlay.querySelector(".onboard-skip");
+  if (target) target.focus();
+}
+
+// Surface the active comparison's name + blurb (carried on state from the template / onboarding /
+// share link) so the report opens with what is actually being compared, instead of the metadata
+// going unused.
+function renderActiveSummary() {
+  const el = $("#active-summary");
+  if (!el) return;
+  const label = state.label, blurb = state.blurb;
+  if (!label && !blurb) { el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  el.innerHTML = (label ? `<strong>${esc(label)}.</strong> ` : "") + esc(blurb ?? "");
 }
 
 function renderAll() {
   renderGlobals();
+  renderActiveSummary();
   renderScenarioCards();
   recompute();
 }

@@ -163,9 +163,17 @@ export function initOnboarding({ onComplete, onSkip }) {
       <div class="onboard-actions"><button class="onboard-next" data-next="1">Continue →</button></div>${backHtml()}`;
   }
 
+  // Each step replaces body.innerHTML, which drops focus to <body>. Move it to the first control of
+  // the new step so keyboard users stay oriented (app.js handles the focus trap and restore).
+  function focusFirst() {
+    const el = body.querySelector(".onboard-choice, .onboard-select, .onboard-next, .onboard-back");
+    if (el) el.focus();
+  }
+
   function render() {
     if (cursor < 0) renderSituation();
     else renderStep(flow[cursor]);
+    focusFirst();
   }
 
   function advance() {
