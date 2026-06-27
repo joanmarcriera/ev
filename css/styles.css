@@ -2,6 +2,21 @@
    Two semantic poles encode the whole comparison: green = electric/cheaper, amber = fuel/ICE.
    Signature: the crossover line chart + the pence-per-mile gauges. */
 
+/* discreet dashboard nudge (shown only when an EV is the cheaper option) */
+.ev-nudge { margin: -4px 0 0; font-size: 12.5px; min-height: 0; }
+.ev-nudge:empty { display: none; }
+.ev-nudge a { color: var(--ev); text-decoration: none; font-weight: 600; }
+.ev-nudge a:hover { text-decoration: underline; }
+
+/* "Next steps" affiliate block in the report */
+.next-steps { margin-top: 22px; }
+.next-steps-list { list-style: none; padding: 0; margin: 8px 0 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 24px; }
+.next-steps-list li { font-size: 14px; }
+.next-steps-list a { font-weight: 600; }
+.next-steps-list .ns-blurb { display: block; color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+.affiliate-note { font-size: 12px; color: var(--muted); margin-top: 12px; font-style: italic; }
+
 :root {
   --bg: #F2F5F4;
   --panel: #FFFFFF;

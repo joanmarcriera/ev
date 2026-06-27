@@ -9,6 +9,7 @@ import {
 } from "./charts.js";
 import { CARS, CAR_GROUPS, applyCarToScenario } from "./cars.js";
 import { initOnboarding } from "./onboarding.js";
+import { relevantLinks, nudgeLink } from "./links.js";
 
 const SERIES_COLORS = ["#D9772B", "#16A571", "#2E6BE6"]; // baseline, switch, third
 const MAX_SCENARIOS = 3;
@@ -59,7 +60,7 @@ function sanitizeState(o) {
   };
   const numFields = ["annualMiles", "mpg", "milesPerKwh", "homePct", "publicPct", "solarPct",
     "purchasePrice", "currentValue", "tradeInValue", "depreciationPctPerYear",
-    "insurancePerYear", "servicingPerYear", "repairsPerYear", "vedPerYear", "ageYears"];
+    "insurancePerYear", "servicingPerYear", "repairsPerYear", "vedPerYear", "ageYears", "chargerInstall"];
   const scenarios = o.scenarios.slice(0, MAX_SCENARIOS).map((s, i) => {
     const clean = {
       id: (String(s.id ?? "opt" + i).replace(/[^a-z0-9_-]/gi, "") || "opt" + i).slice(0, 40),
@@ -122,6 +123,7 @@ function renderScenarioCards() {
       ${numberRow(s, valueField(s))}
       ${s.powertrain === "ev"
         ? numberRow(s, { f: "milesPerKwh", label: "Miles / kWh", step: 0.1, min: 0.5 }) + chargingSplit(s)
+          + numberRow(s, { f: "chargerInstall", label: "Charger install £", step: 50, min: 0 })
         : numberRow(s, { f: "mpg", label: "MPG", step: 1, min: 1 })}
       ${milesRow(s)}
       ${COMMON_FIELDS.map((cf) => numberRow(s, cf)).join("")}
@@ -261,7 +263,31 @@ function recompute() {
   renderVerdict(baseline, sw, cmp);
   renderDivergence(baseline, sw);
   renderReportTable();
+  renderNextSteps(baseline, sw, cmp);
   encodeState();
+}
+
+// Affiliate "Next steps" links (report) + the single dashboard nudge. Outbound only.
+function renderNextSteps(baseline, sw, cmp) {
+  const anyEv = state.scenarios.some((s) => s.powertrain === "ev");
+  const anySolar = state.scenarios.some((s) => (s.solarPct ?? 0) > 0);
+  const winner = cmp ? (cmp.lifetimeSaving >= 0 ? sw : baseline) : null;
+  const winnerIsEv = !!winner && winner.powertrain === "ev";
+  const ctx = { anyEv, anySolar, winnerIsEv };
+
+  const list = $("#next-steps-list");
+  if (list) {
+    list.innerHTML = relevantLinks(ctx).map((l) =>
+      `<li><a href="${esc(l.href)}" target="_blank" rel="sponsored noopener">${esc(l.label)}</a>
+        <span class="ns-blurb">${esc(l.blurb)}</span></li>`).join("");
+  }
+  const nudge = $("#ev-nudge");
+  if (nudge) {
+    const link = winnerIsEv ? nudgeLink() : null;
+    nudge.innerHTML = link
+      ? `<a href="${esc(link.href)}" target="_blank" rel="sponsored noopener">Getting a charger? Compare install quotes →</a>`
+      : "";
+  }
 }
 
 function renderVerdict(baseline, sw, cmp) {

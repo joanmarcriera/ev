@@ -67,6 +67,7 @@
     <!-- centre: verdict + the crossover chart (the hero) + why-they-diverge -->
     <section class="panel hero" aria-label="Result">
       <div id="verdict" class="verdict" aria-live="polite"></div>
+      <p id="ev-nudge" class="ev-nudge" aria-live="polite"></p>
       <div class="chart-box hero-chart">
         <canvas id="line-chart" aria-label="Cumulative cost over time for each option"></canvas>
       </div>
@@ -154,6 +155,15 @@
           </ul>
         </div>
       </div>
+
+      <section class="next-steps" aria-label="Next steps">
+        <h3>Next steps</h3>
+        <p class="sources">If you've landed on a direction, these can help you act on it:</p>
+        <ul id="next-steps-list" class="next-steps-list"></ul>
+        <p class="affiliate-note">Some of these are affiliate links — if you use one we may earn a
+          small commission, at no extra cost to you. They're suggestions, not endorsements, and
+          nothing you enter here is shared with them.</p>
+      </section>
 
       <h3>Other UK calculators &amp; the sources behind the defaults</h3>
       <p class="sources">Tools that do similar comparisons (and where the default figures come from):</p>

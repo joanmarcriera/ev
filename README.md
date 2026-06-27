@@ -64,6 +64,8 @@ Guidance only — not financial advice.
 
 If this helped you make a decision, you can [buy me a coffee](https://marcriera.lemonsqueezy.com/checkout/buy/828ef1c2-2aa1-4c0c-8828-8b388ada3b25) ☕ — entirely optional, and there's a discreet link in the page footer too.
 
+The "Next steps" links in the report are affiliate/referral links. To make them earn (and for the owner setup steps), see **[AFFILIATE-SETUP.md](AFFILIATE-SETUP.md)**.
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE).
