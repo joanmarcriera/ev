@@ -26,6 +26,7 @@ export const CARS = [
   { id: "ariya", name: "Nissan Ariya 63 kWh", powertrain: "ev", milesPerKwh: 3.5, purchasePrice: 20000, depreciationPctPerYear: 0.13, insurancePerYear: 560, servicingPerYear: 160, vedPerYear: 195 },
   { id: "atto3", name: "BYD Atto 3 60 kWh", powertrain: "ev", milesPerKwh: 3.7, purchasePrice: 19000, depreciationPctPerYear: 0.13, insurancePerYear: 540, servicingPerYear: 150, vedPerYear: 195 },
   { id: "xc40", name: "Volvo XC40 Recharge", powertrain: "ev", milesPerKwh: 3.2, purchasePrice: 22000, depreciationPctPerYear: 0.12, insurancePerYear: 600, servicingPerYear: 180, vedPerYear: 195 },
+  { id: "ux300e", name: "Lexus UX 300e 54 kWh", powertrain: "ev", milesPerKwh: 3.4, purchasePrice: 15000, depreciationPctPerYear: 0.11, insurancePerYear: 560, servicingPerYear: 170, vedPerYear: 195 },
   { id: "modely", name: "Tesla Model Y RWD", powertrain: "ev", milesPerKwh: 3.9, purchasePrice: 24000, depreciationPctPerYear: 0.12, insurancePerYear: 620, servicingPerYear: 180, vedPerYear: 195 },
 
   // --- Petrol ---
