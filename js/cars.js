@@ -55,6 +55,36 @@ export const CAR_GROUPS = [
   { label: "Hybrid", powertrain: "hybrid" },
 ];
 
+// Sensible fallbacks when a scenario flips powertrain with no figure yet for the new one.
+const DEFAULT_MILES_PER_KWH = 4.0;
+const DEFAULT_MPG = 45;
+// EV-only fields: a charger install and a home/public/solar charging mix make no sense on a
+// petrol/diesel/hybrid car. chargerInstall in particular is added to the running total in
+// model.cumulativeCostAt, so a stale value left behind when you switch to an ICE car would
+// silently inflate its cost — exactly the "charger/solar cost didn't update" bug.
+const EV_ONLY_FIELDS = ["milesPerKwh", "chargerInstall", "homePct", "publicPct", "solarPct"];
+const ICE_ONLY_FIELDS = ["mpg"];
+
+/** Reconcile a scenario's efficiency/charging fields with its powertrain: seed a sensible default
+ *  for the field the powertrain needs and strip the ones it doesn't. Idempotent and pure — returns
+ *  a new object. Every entry point that can change a scenario's powertrain (the car picker, the
+ *  powertrain dropdown, a decoded share link) should pass through here so no EV-only cost is ever
+ *  left clinging to an ICE option (and no efficiency field is left undefined → NaN). */
+export function normalizeForPowertrain(scenario) {
+  const s = { ...scenario };
+  if (s.powertrain === "ev") {
+    for (const f of ICE_ONLY_FIELDS) delete s[f];
+    if (s.milesPerKwh == null) s.milesPerKwh = DEFAULT_MILES_PER_KWH;
+    if (s.homePct == null && s.publicPct == null && s.solarPct == null) {
+      s.homePct = 100; s.publicPct = 0; s.solarPct = 0;
+    }
+  } else {
+    for (const f of EV_ONLY_FIELDS) delete s[f];
+    if (s.mpg == null) s.mpg = DEFAULT_MPG;
+  }
+  return s;
+}
+
 /** Fields a chosen car contributes to a scenario (mileage & charging mix are left untouched).
  *  By default a baseline card represents a car you already OWN, so its current value is seeded from
  *  the price and purchasePrice is cleared. Pass { asPurchase: true } for a baseline that is a car
@@ -70,7 +100,7 @@ export function applyCarToScenario(scenario, car, opts = {}) {
   } else if (opts.asPurchase) {
     delete next.currentValue;              // a car you'd buy — keep it a "buy" shape
   }
-  // Clear the efficiency field that doesn't apply to the new powertrain.
-  if (car.powertrain === "ev") delete next.mpg; else delete next.milesPerKwh;
-  return next;
+  // Reconcile efficiency/charging fields with the new powertrain (also clears a stale charger
+  // install or solar mix when switching from an EV to an ICE car).
+  return normalizeForPowertrain(next);
 }
