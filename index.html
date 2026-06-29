@@ -197,5 +197,17 @@
 
   <script src="vendor/chart.umd.min.js"></script>
   <script type="module" src="js/app.js"></script>
+
+  <!-- ============ ANALYTICS — Cloudflare Web Analytics (cookieless, no consent banner) ============
+       HOW TO ACTIVATE (takes ~2 minutes):
+         1. Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site
+         2. Cloudflare shows a beacon snippet — copy the token string from it
+         3. Replace PASTE_YOUR_TOKEN_HERE with that token
+         4. Remove the surrounding HTML comment markers (the lines starting with < !-- and -- >)
+         5. Commit and push — analytics will start appearing in ~24 h
+       Until you do this, the block is commented out and does absolutely nothing.
+  -->
+  <!-- <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+    data-cf-beacon='{"token":"PASTE_YOUR_TOKEN_HERE"}'></script> -->
 </body>
 </html>
