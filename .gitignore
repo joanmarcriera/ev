@@ -1,3 +1,5 @@
 node_modules/
 .DS_Store
+# Private setup checklist — must never be served on the public Pages site.
+REFERRALS-TODO.md
 # Note: vendor/ holds the vendored Chart.js and IS committed (GitHub Pages serves it).
