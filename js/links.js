@@ -20,7 +20,7 @@ export const AFFILIATE_LINKS = [
     key: "tariff",
     label: "Switch to an EV energy tariff",
     blurb: "A cheap overnight EV rate is what makes home charging 2–3p/mile.",
-    href: "https://octopus.energy/", // REPLACE with your Octopus referral link (share.octopus.energy/...)
+    href: "https://share.octopus.energy/crisp-pug-222", // Octopus refer-a-friend link (tracked; both sides get credit)
     when: (c) => c.anyEv,
   },
   {
