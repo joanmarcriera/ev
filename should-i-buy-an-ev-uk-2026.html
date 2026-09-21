@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Should I Buy an EV in the UK? (Honest 2026 Guide)</title>
+  <meta name="description" content="The numbers-first answer for UK drivers in 2026. Running costs, home charging, road tax changes, insurance, and when EVs beat petrol — then plug your own figures into our free calculator.">
+  <link rel="canonical" href="https://ev.riera.co.uk/should-i-buy-an-ev-uk-2026">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Article page — extends styles.css without modifying it */
+    .article-topbar {
+      height: var(--topbar-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 24px;
+      background: var(--ink);
+      color: #EFF4F2;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .article-topbar .brand { display: flex; align-items: baseline; gap: 10px; }
+    .article-topbar .brand .mark { font-size: 22px; transform: translateY(2px); }
+    .brand-title {
+      font: 600 22px/1 "Space Grotesk", "Inter", sans-serif;
+      letter-spacing: -.01em;
+      margin: 0;
+      text-decoration: none;
+      color: inherit;
+    }
+    .article-topbar .tagline { margin: 0; color: #9DB3AD; font-size: 13px; }
+    .btn-cta {
+      background: var(--ev); color: #062b1e;
+      border: none; border-radius: 9px; padding: 9px 16px;
+      font: 600 14px "Space Grotesk", "Inter", sans-serif;
+      cursor: pointer; text-decoration: none; display: inline-block; white-space: nowrap;
+    }
+    .btn-cta:hover { filter: brightness(1.08); color: #062b1e; }
+    .btn-cta-lg { font-size: 16px; padding: 13px 28px; border-radius: 10px; }
+
+    .article-wrap { max-width: 740px; margin: 0 auto; padding: 44px 24px 88px; }
+    .article-wrap > h1 {
+      font-size: clamp(26px, 5vw, 40px);
+      margin: 0 0 10px;
+      line-height: 1.15;
+    }
+    .byline { color: var(--muted); font-size: 13px; margin: 0 0 32px; }
+    .byline a { color: var(--accent); }
+
+    .article-wrap h2 {
+      font-size: 21px; margin: 40px 0 10px;
+      padding-top: 32px; border-top: 1px solid var(--line);
+    }
+    .article-wrap h2:first-of-type { border-top: none; padding-top: 0; }
+    .article-wrap p { line-height: 1.65; max-width: 68ch; }
+    .article-wrap ul, .article-wrap ol {
+      line-height: 1.65; padding-left: 20px; max-width: 66ch;
+    }
+    .article-wrap li { margin: 7px 0; }
+
+    .tldr {
+      border-radius: var(--radius); padding: 18px 22px;
+      background: var(--good-bg); border: 1px solid #a8dfca;
+      margin: 0 0 36px;
+    }
+    .tldr h2 {
+      font-size: 16px; margin: 0 0 10px; color: #0b7a52;
+      border-top: none; padding-top: 0;
+    }
+    .tldr ul { margin: 0; padding-left: 18px; }
+    .tldr li { font-size: 14.5px; }
+
+    .callout {
+      background: var(--panel); border: 1px solid var(--line);
+      border-left: 4px solid var(--ev); border-radius: var(--radius);
+      padding: 14px 18px; margin: 22px 0;
+    }
+    .callout.amber { border-left-color: var(--ice); }
+    .callout p { margin: 0; font-size: 14.5px; line-height: 1.55; }
+
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 14px; margin: 16px 0 8px;
+    }
+    .data-table th, .data-table td {
+      padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right;
+    }
+    .data-table th:first-child, .data-table td:first-child { text-align: left; }
+    .data-table thead th {
+      color: var(--muted); font-weight: 600;
+      border-bottom: 2px solid var(--grid);
+    }
+    .data-table .ev-row td { color: #0b7a52; font-weight: 500; }
+    .table-note { font-size: 12px; color: var(--muted); margin: 4px 0 20px; }
+
+    .cta-block {
+      background: var(--ink); color: #EFF4F2;
+      border-radius: var(--radius); padding: 32px 28px;
+      margin: 48px 0 28px; text-align: center;
+    }
+    .cta-block h2 {
+      font-size: 24px; margin: 0 0 10px; color: #EFF4F2;
+      border-top: none; padding-top: 0;
+    }
+    .cta-block p { color: #9DB3AD; margin: 0 auto 24px; }
+
+    .article-foot {
+      font-size: 12.5px; color: var(--muted);
+      border-top: 1px solid var(--line); padding-top: 20px; margin-top: 48px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .article-foot a { color: var(--accent); }
+    .article-foot .coffee {
+      text-decoration: none; font-size: 20px; line-height: 1;
+      opacity: .55; transition: opacity .15s; filter: grayscale(1);
+    }
+    .article-foot .coffee:hover { opacity: 1; filter: grayscale(0); }
+
+    @media (max-width: 640px) {
+      .article-topbar { padding: 0 16px; }
+      .article-topbar .tagline { display: none; }
+      .article-wrap { padding: 28px 16px 64px; }
+      .data-table { font-size: 13px; }
+      .data-table th, .data-table td { padding: 8px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="article-topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">⚡</span>
+      <a href="/" class="brand-title">EV&nbsp;or&nbsp;not?</a>
+      <p class="tagline">Keep it, or switch? See the real cost.</p>
+    </div>
+    <a href="/" class="btn-cta">Use the free calculator →</a>
+  </header>
+
+  <main>
+    <div class="article-wrap">
+      <h1>Should I buy an EV in the UK in 2026?</h1>
+      <p class="byline">Updated June 2026 · 8 min read ·
+        <a href="/">Try the free TCO calculator</a>
+      </p>
+
+      <div class="tldr">
+        <h2>The short answer</h2>
+        <ul>
+          <li><strong>High mileage + home charging?</strong> EVs usually win on total cost within 3–5 years.</li>
+          <li><strong>Low mileage or no driveway?</strong> The case is weaker — public rapid charging costs erode the savings.</li>
+          <li><strong>Home solar too?</strong> Running costs can fall to near-zero per mile. One of the clearest wins in personal finance for a UK homeowner.</li>
+          <li>The honest answer for your situation: plug <em>your</em> numbers into the calculator below.</li>
+        </ul>
+      </div>
+
+      <h2>The numbers that actually decide it</h2>
+      <p>
+        The EV debate tends to get stuck on range anxiety and charging speed. The more important
+        question for most UK drivers is simpler: <strong>what will it cost me over the next 5–7
+        years compared with what I drive now?</strong>
+      </p>
+      <p>Three numbers dominate that answer:</p>
+      <ol>
+        <li>
+          <strong>How many miles you drive per year.</strong> More miles means more fuel saving,
+          which pays back the higher purchase price faster.
+        </li>
+        <li>
+          <strong>Whether you can charge at home.</strong> Overnight home charging on an EV
+          tariff typically costs 25–30p/kWh. Public rapid chargers typically run 75–85p/kWh.
+          That threefold gap is the single biggest swing factor in the whole decision.
+        </li>
+        <li>
+          <strong>What you're comparing against.</strong> Keeping a paid-off car avoids
+          depreciation costs; switching to a new EV means absorbing them. A fair comparison
+          includes both sides.
+        </li>
+      </ol>
+
+      <h2>Running costs: EV vs petrol and diesel in 2026</h2>
+      <p>
+        Here is a rough comparison at typical 2026 UK pump and tariff prices,
+        for a driver covering 10,000 miles a year:
+      </p>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>p/mile (running)</th>
+              <th>Fuel/electricity per year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Petrol, 40 MPG, £1.40/L</td>
+              <td>15.9p</td>
+              <td>~£1,590</td>
+            </tr>
+            <tr>
+              <td>Diesel, 50 MPG, £1.45/L</td>
+              <td>13.2p</td>
+              <td>~£1,320</td>
+            </tr>
+            <tr class="ev-row">
+              <td>EV, 4 mi/kWh, home charging 27p/kWh</td>
+              <td>6.8p</td>
+              <td>~£675</td>
+            </tr>
+            <tr class="ev-row">
+              <td>EV, 4 mi/kWh, public rapid 79p/kWh</td>
+              <td>19.8p</td>
+              <td>~£1,975</td>
+            </tr>
+            <tr class="ev-row">
+              <td>EV + solar (70% solar at ~0p/kWh)</td>
+              <td>~2p</td>
+              <td>~£200</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        Illustrative 2026 figures. Replace with your own tariff and real-world efficiency numbers —
+        the <a href="/">calculator</a> lets you do exactly that.
+      </p>
+
+      <div class="callout">
+        <p>
+          <strong>The home charging rule:</strong> If you can plug in overnight at home,
+          an EV's running costs are roughly half those of a comparable petrol car.
+          If you rely mainly on public rapid chargers, running costs can be <em>higher</em>
+          than petrol — the total-cost case then rests entirely on depreciation and servicing.
+        </p>
+      </div>
+
+      <h2>The solar panel factor</h2>
+      <p>
+        If you have (or are planning) home solar panels, the economics shift dramatically.
+        Solar electricity costs close to 0p per kWh for cars charged during the day — or
+        a few pence per kWh when drawn from a home battery overnight. At those rates,
+        even a modest EV can cost <strong>2–4p per mile</strong> to run, against 14–20p
+        for petrol.
+      </p>
+      <p>
+        The combined EV + solar setup is one of the clearest wins in personal finance
+        for a UK homeowner with decent annual mileage — but it needs upfront capital for both.
+        Running the calculator with a realistic solar charging mix shows you exactly how
+        quickly that capital pays back.
+      </p>
+
+      <h2>Upfront cost and depreciation</h2>
+      <p>
+        New EVs still carry a premium over equivalent petrol cars, though the gap has narrowed
+        considerably. The used EV market — particularly ex-lease cars — fell sharply in value
+        between 2022 and 2024, making quality second-hand EVs much more accessible heading
+        into 2026.
+      </p>
+      <p>
+        Depreciation matters as much as the sticker price. What the car will be worth in
+        five years affects your total cost just as the purchase price does. The calculator
+        uses a reducing-balance depreciation model: enter your purchase price and a realistic
+        annual depreciation rate, and it works out the true lifetime cost on both sides.
+      </p>
+
+      <div class="callout amber">
+        <p>
+          <strong>The kept-car trap:</strong> Keeping a paid-off car feels free, but it
+          is not — it still has a value that is depreciating, plus rising repair risk as
+          it ages. A fair comparison captures this, not just the fuel bill.
+          The calculator includes both.
+        </p>
+      </div>
+
+      <h2>Road tax (VED) — what changed in April 2025</h2>
+      <p>
+        EVs registered before April 2025 paid £0 per year in Vehicle Excise Duty.
+        From April 2025, all new EVs pay the standard annual rate (£195/yr as of 2025–26),
+        and any EV with a list price above £40,000 pays the expensive-car supplement
+        for years two through six (~£620/yr on top). This reduces the cost advantage
+        over petrol but does not eliminate it — petrol and diesel cars also pay VED,
+        and older diesels may face Clean Air Zone charges on top.
+      </p>
+      <p>Source: <a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank" rel="noopener">gov.uk VED rate tables</a>.</p>
+
+      <h2>Servicing</h2>
+      <p>
+        EVs have significantly fewer moving parts than internal combustion engine vehicles:
+        no oil changes, no timing belt, no exhaust system. Regenerative braking also reduces
+        brake wear considerably. The <a href="https://energysavingtrust.org.uk/electric-vehicles/" target="_blank" rel="noopener">Energy Saving Trust</a>
+        estimates EV servicing costs are meaningfully lower than for equivalent petrol or
+        diesel cars over a typical ownership period.
+      </p>
+
+      <h2>Insurance</h2>
+      <p>
+        EVs tend to cost more to insure than comparable petrol cars. The main reasons:
+        expensive battery packs, a smaller pool of specialist repairers, and longer
+        repair turnaround times after accidents. According to the
+        <a href="https://www.abi.org.uk/" target="_blank" rel="noopener">Association of British Insurers</a>
+        and <a href="https://www.thatcham.org/" target="_blank" rel="noopener">Thatcham Research</a>,
+        premiums can be 10–25% higher than for comparable ICE vehicles, though this
+        varies widely by model and insurer. Factor it in as a fixed annual cost when
+        doing a like-for-like comparison.
+      </p>
+
+      <h2>When buying an EV clearly makes sense</h2>
+      <ul>
+        <li>You drive <strong>10,000+ miles per year</strong> — enough volume to amortise the purchase premium.</li>
+        <li>You have <strong>reliable home charging</strong> (driveway, garage, or a dedicated street charge point).</li>
+        <li>You are comparing against <strong>buying a newer car anyway</strong>, not keeping a paid-off one.</li>
+        <li>You have solar panels or plan to install them — the combined win is compelling over a 7-year horizon.</li>
+        <li>Your routine trips are predictable and comfortably within the car's real-world range.</li>
+      </ul>
+
+      <h2>When petrol — or keeping what you have — might still win</h2>
+      <ul>
+        <li>You drive <strong>fewer than 6,000 miles per year</strong> — the fuel saving barely covers the price premium.</li>
+        <li>You have <strong>no reliable home charging</strong> and would depend heavily on public rapid chargers.</li>
+        <li>You already own a <strong>paid-off, low-repair-cost car</strong> — the depreciation you avoid is a powerful number.</li>
+        <li>You need regular very long journeys where multiple rapid-charge stops would add significant time.</li>
+      </ul>
+
+      <div class="cta-block">
+        <h2>What do the numbers say for <em>your</em> situation?</h2>
+        <p>
+          Plug in your mileage, your current car's value, the EV you are considering,
+          and your electricity and fuel prices. The calculator works out the break-even
+          year, pence-per-mile, and total cost over any horizon you choose — all in
+          your browser, nothing stored or shared.
+        </p>
+        <a href="/" class="btn-cta btn-cta-lg">Run the free EV cost calculator →</a>
+      </div>
+
+      <h2>Sources and further reading</h2>
+      <ul class="method">
+        <li><a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank" rel="noopener">gov.uk — VED (road tax) rate tables</a></li>
+        <li><a href="https://energysavingtrust.org.uk/electric-vehicles/" target="_blank" rel="noopener">Energy Saving Trust — EV running cost guidance</a></li>
+        <li><a href="https://www.abi.org.uk/" target="_blank" rel="noopener">Association of British Insurers — EV insurance data</a></li>
+        <li><a href="https://www.thatcham.org/" target="_blank" rel="noopener">Thatcham Research — EV repair cost research</a></li>
+        <li><a href="https://www.zap-map.com/" target="_blank" rel="noopener">Zap-Map — UK public charging network coverage</a></li>
+      </ul>
+
+      <footer class="article-foot">
+        <span>
+          Guidance only, not financial advice. Prices are illustrative 2026 figures — always use your own quotes.
+          Open source ·
+          <a href="https://github.com/joanmarcriera/ev" target="_blank" rel="noopener">github.com/joanmarcriera/ev</a>
+        </span>
+        <a class="coffee"
+           href="https://marcriera.lemonsqueezy.com/checkout/buy/828ef1c2-2aa1-4c0c-8828-8b388ada3b25"
+           target="_blank" rel="noopener" title="Found this useful? Buy me a coffee"
+           aria-label="Buy me a coffee">☕</a>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>
